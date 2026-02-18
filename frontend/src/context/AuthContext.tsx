@@ -87,8 +87,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (data) setRole(data.role as UserRole);
             else console.warn('No profile found for user');
 
-        } catch (error) {
-            console.error('Error fetching role:', error);
+        } catch {
+            // error ignored
         } finally {
             setLoading(false);
         }

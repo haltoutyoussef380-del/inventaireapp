@@ -40,7 +40,7 @@ const InventairePage: React.FC = () => {
                 user_id: user.id
             });
 
-            setLastScan({ status: 'success', msg: `Scanné: ${materiel.nom}`, item: materiel });
+            setLastScan({ status: 'success', msg: `Scanné: ${(materiel as any).nom}`, item: materiel });
             setScannedItems(prev => [materiel, ...prev]);
 
             // Feedback sonore (beep)
