@@ -51,8 +51,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             } else {
                 setLoading(false);
             }
-        }).catch((err) => {
-            console.error("Session check failed", err);
+        }).catch(() => { // Removed 'err' from catch
+            console.error("Session check failed"); // Removed 'err' from console.error
             if (mounted) setLoading(false);
         });
 
@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const fetchUserRole = async (userId: string) => {
         try {
-            const { data, error } = await supabase
+            const { data } = await supabase
                 .from('profiles')
                 .select('role')
                 .eq('id', userId)
