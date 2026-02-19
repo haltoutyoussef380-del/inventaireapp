@@ -1,45 +1,79 @@
-import React, { useEffect, useRef } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import React, { useEffect, useRef, useState } from 'react';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 interface BarcodeScannerProps {
     onScanSuccess: (decodedText: string) => void;
     onScanFailure?: (error: any) => void;
 }
 
-const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScanSuccess, onScanFailure }) => {
-    const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScanSuccess }) => {
+    const scannerRef = useRef<Html5Qrcode | null>(null);
+    const [errorMsg, setErrorMsg] = useState<string>('');
+    const mountedRef = useRef(false);
 
     useEffect(() => {
-        // Initialisation du scanner
-        scannerRef.current = new Html5QrcodeScanner(
-            "reader",
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-      /* verbose= */ false
-        );
+        mountedRef.current = true;
+        const elemId = "reader-custom";
 
-        scannerRef.current.render(
-            (decodedText) => {
-                onScanSuccess(decodedText);
-                // Optionnel: Arrêter le scan après succès si on veut scanner un seul item
-                // scannerRef.current?.clear(); 
-            },
-            (error) => {
-                if (onScanFailure) onScanFailure(error);
-            }
-        );
+        const startScanner = async () => {
+            try {
+                // Si une instance existe déjà, on ne fait rien
+                if (scannerRef.current) return;
 
-        // Cleanup
-        return () => {
-            if (scannerRef.current) {
-                scannerRef.current.clear().catch(error => console.error("Failed to clear html5-qrcode scanner. ", error));
+                const html5QrCode = new Html5Qrcode(elemId);
+                scannerRef.current = html5QrCode;
+
+                await html5QrCode.start(
+                    { facingMode: "environment" }, // Caméra arrière
+                    {
+                        fps: 10,
+                        qrbox: { width: 250, height: 250 },
+                        aspectRatio: 1.0,
+                        formatsToSupport: [Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.QR_CODE]
+                    },
+                    (decodedText) => {
+                        if (mountedRef.current) {
+                            onScanSuccess(decodedText);
+                        }
+                    },
+                    (errorMessage) => {
+                        // On ignore les erreurs de scan frame par frame (trop verbeux)
+                        // console.log(errorMessage);
+                    }
+                );
+            } catch (err) {
+                console.error("Erreur start scanner", err);
+                if (mountedRef.current) setErrorMsg("Impossible d'accéder à la caméra. Vérifiez les permissions.");
             }
         };
-    }, []); // Empty dependency array ensures this runs once
+
+        // Petit délai pour s'assurer que le DOM est prêt
+        setTimeout(startScanner, 100);
+
+        return () => {
+            mountedRef.current = false;
+            if (scannerRef.current && scannerRef.current.isScanning) {
+                scannerRef.current.stop().then(() => {
+                    scannerRef.current?.clear();
+                    scannerRef.current = null;
+                }).catch(err => {
+                    console.error("Erreur stop scanner", err);
+                });
+            }
+        };
+    }, []); // Run once on mount
 
     return (
-        <div className="w-full max-w-md mx-auto">
-            <div id="reader" style={{ width: '100%' }}></div>
-            <p className="text-center text-sm text-gray-500 mt-2">Pointez la caméra vers un code-barres</p>
+        <div className="w-full max-w-md mx-auto relative rounded-lg overflow-hidden bg-black">
+            <div id="reader-custom" style={{ width: '100%', minHeight: '300px' }}></div>
+            {errorMsg && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-80 text-white p-4 text-center">
+                    {errorMsg}
+                </div>
+            )}
+            {!errorMsg && <div className="absolute bottom-4 left-0 right-0 text-center text-white text-sm opacity-70">
+                Caméra active
+            </div>}
         </div>
     );
 };

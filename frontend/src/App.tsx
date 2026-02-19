@@ -3,6 +3,7 @@ import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import MaterielList from './pages/MaterielList';
 import InventairePage from './pages/InventairePage';
+import UsersPage from './pages/UsersPage';
 import Login from './pages/Login';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -19,7 +20,9 @@ function App() {
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
               <Route path="materiels" element={<MaterielList />} />
+              <Route path="materiels" element={<MaterielList />} />
               <Route path="inventaire" element={<InventairePage />} />
+              <Route path="users" element={<UsersPage />} />
             </Route>
           </Route>
 

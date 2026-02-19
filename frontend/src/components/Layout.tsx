@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link, Outlet } from 'react-router-dom';
-import { LayoutDashboard, Package, ClipboardList, Menu } from 'lucide-react';
+import { LayoutDashboard, Package, ClipboardList, Menu, Users } from 'lucide-react';
 import { supabase } from '../supabase';
+import { useAuth } from '../context/AuthContext';
 
 const Layout: React.FC = () => {
     const [sidebarOpen, setSidebarOpen] = React.useState(false);
+    const { role } = useAuth();
 
     return (
         <div className="flex h-screen bg-gray-100">
@@ -34,6 +36,15 @@ const Layout: React.FC = () => {
                         <ClipboardList className="w-5 h-5 mr-3" />
                         Campagne Inventaire
                     </Link>
+
+                    {/* Lien Admin seulement */}
+                    {role === 'admin' && (
+                        <Link to="/users" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-md" onClick={() => setSidebarOpen(false)}>
+                            <Users className="w-5 h-5 mr-3" />
+                            Agents
+                        </Link>
+                    )}
+
                     <button
                         onClick={() => { supabase.auth.signOut(); setSidebarOpen(false); }}
                         className="flex w-full items-center px-4 py-2 text-red-600 hover:bg-red-50 rounded-md mt-4"

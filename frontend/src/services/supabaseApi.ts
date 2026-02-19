@@ -100,29 +100,115 @@ export const inventaireService = {
         return data;
     },
 
-    scan: async (scanData: { inventaire_id: number, code_barres: string, user_id: string }) => {
-        // 1. Find materiel
-        const { data: materiel, error: matError } = await supabase
+    getMaterielByCode: async (code: string) => {
+        const { data: materiel, error } = await supabase
             .from('materiels')
             .select('*')
-            .eq('numero_inventaire', scanData.code_barres)
+            .eq('numero_inventaire', code)
             .single();
 
-        if (matError || !materiel) throw new Error('Matériel non trouvé');
+        if (error || !materiel) throw new Error('Matériel non trouvé');
+        return materiel;
+    },
 
-        // 2. Insert line
+    confirmScan: async (scanData: { inventaire_id: number, materiel_id: number, user_id: string }) => {
+        // Check if already scanned in this inventory
+        const { data: existing } = await supabase
+            .from('inventaire_lignes')
+            .select('id')
+            .eq('inventaire_id', scanData.inventaire_id)
+            .eq('materiel_id', scanData.materiel_id)
+            .single();
+
+        if (existing) {
+            throw new Error('Déjà scanné dans cet inventaire');
+        }
+
         const { data: ligne, error: lineError } = await supabase
             .from('inventaire_lignes')
             .insert([{
                 inventaire_id: scanData.inventaire_id,
-                materiel_id: materiel.id,
+                materiel_id: scanData.materiel_id,
                 scanne_par: scanData.user_id,
                 presence: true
             }])
             .select()
             .single();
 
+
         if (lineError) throw lineError;
-        return { materiel, ligne };
+        return ligne;
+    },
+
+    getAll: async () => {
+        const { data, error } = await supabase
+            .from('inventaires')
+            .select('*')
+            .order('date_debut', { ascending: false });
+        if (error) throw error;
+        return data;
+    },
+
+    getStats: async (inventaireId: number, userId: string) => {
+        const { count, error } = await supabase
+            .from('inventaire_lignes')
+            .select('*', { count: 'exact', head: true })
+            .eq('inventaire_id', inventaireId)
+            .eq('scanne_par', userId);
+
+        if (error) throw error;
+        return { scannedCount: count || 0 };
+    }
+};
+
+// Hack: Create a second client to allow Admin to create users without logging himself out
+import { createClient } from '@supabase/supabase-js';
+import { supabaseUrl, supabaseAnonKey } from '../supabase';
+
+export const userService = {
+    getAgents: async () => {
+        // Fetch profiles where role = agent
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('role', 'agent');
+
+        if (error) throw error;
+        return data;
+    },
+
+    createAgent: async (email: string, password: string, name: string) => {
+        // 1. Create a temporary client
+        const tempClient = createClient(supabaseUrl, supabaseAnonKey);
+
+        // 2. Sign up the new user
+        const { data, error } = await tempClient.auth.signUp({
+            email,
+            password,
+            options: {
+                data: { role: 'agent', full_name: name } // We pass metadata to trigger the trigger? No, we update profile manually if needed
+            }
+        });
+
+        if (error) throw error;
+
+        // 3. Since we have a trigger that creates profile on signup, we might want to update the name immediately
+        // But for now, let's assume the Trigger in SQL handles the insertion into 'profiles'.
+        // If the trigger just sets ID, we might need to update the profile with the name.
+
+        if (data.user) {
+            // Update the profile with the name/role if the trigger basic insert wasn't enough
+            // But we can't use tempClient to update 'profiles' effectively if RLS blocks it.
+            // The Admin (main 'supabase' client) CAN update profiles.
+
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .update({ role: 'agent', email: email }) // Ensure role is agent
+                .eq('id', data.user.id);
+
+            if (profileError) console.error("Error updating profile role:", profileError);
+        }
+
+        return data;
     }
 };
