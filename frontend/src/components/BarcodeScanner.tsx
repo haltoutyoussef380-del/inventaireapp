@@ -28,15 +28,14 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScanSuccess }) => {
                     {
                         fps: 10,
                         qrbox: { width: 250, height: 250 },
-                        aspectRatio: 1.0,
-                        formatsToSupport: [Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.QR_CODE]
+                        aspectRatio: 1.0
                     },
                     (decodedText) => {
                         if (mountedRef.current) {
                             onScanSuccess(decodedText);
                         }
                     },
-                    (errorMessage) => {
+                    () => {
                         // On ignore les erreurs de scan frame par frame (trop verbeux)
                         // console.log(errorMessage);
                     }
