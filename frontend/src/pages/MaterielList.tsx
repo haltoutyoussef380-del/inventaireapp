@@ -22,11 +22,107 @@ const MaterielList: React.FC = () => {
         loadData();
     }, []);
 
-    const handlePrint = (code: string) => {
-        const url = materielService.getBarcodeUrl(code);
+    const handlePrint = (materiel: any) => {
+        const url = materielService.getBarcodeUrl(materiel.numero_inventaire);
         const win = window.open('', '_blank');
         if (win) {
-            win.document.write(`<img src="${url}" onload="window.print();" />`);
+            win.document.write(`
+                <html>
+                    <head>
+                        <style>
+                            @page {
+                                size: 114mm 25mm;
+                                margin: 0;
+                            }
+                            body {
+                                margin: 0;
+                                padding: 0;
+                                width: 114mm;
+                                height: 25mm;
+                                display: flex;
+                                align-items: center;
+                                justify-content: flex-start;
+                                font-family: 'Arial', sans-serif;
+                                overflow: hidden;
+                            }
+                            .logo-section {
+                                width: 35mm;
+                                height: 25mm;
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                justify-content: center;
+                                border-right: 1px solid #ddd;
+                                padding: 0 2mm;
+                            }
+                            .logo-img {
+                                width: 28mm;
+                                object-fit: contain;
+                                margin-bottom: 1mm;
+                            }
+                            .hosp-text {
+                                font-size: 6pt;
+                                text-align: center;
+                                font-weight: bold;
+                                text-transform: uppercase;
+                                line-height: 1.1;
+                            }
+                            .barcode-section {
+                                flex: 1;
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                justify-content: center;
+                                padding: 0 2mm;
+                            }
+                            .barcode-img {
+                                height: 16mm;
+                                width: auto;
+                            }
+                            .info-section {
+                                width: 35mm;
+                                padding-left: 2mm;
+                                border-left: 1px solid #ddd;
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: center;
+                            }
+                            .name {
+                                font-size: 10pt;
+                                font-weight: bold;
+                                text-transform: uppercase;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                            }
+                            .inv-num {
+                                font-size: 9pt;
+                                margin-top: 1mm;
+                                font-family: monospace;
+                            }
+                            .footer-text {
+                                font-size: 7pt;
+                                font-weight: bold;
+                                margin-top: 1mm;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="logo-section">
+                            <img src="${window.location.origin}/logo.png" class="logo-img" />
+                            <div class="hosp-text">Hopital Universitaire Psychiatrique</div>
+                        </div>
+                        <div class="barcode-section">
+                            <img src="${url}" class="barcode-img" onload="window.print(); window.close();" />
+                        </div>
+                        <div class="info-section">
+                            <div class="name">${materiel.nom}</div>
+                            <div class="inv-num">${materiel.numero_inventaire}</div>
+                            <div class="footer-text">INVENTAIRE PSY</div>
+                        </div>
+                    </body>
+                </html>
+            `);
             win.document.close();
         }
     };
@@ -85,7 +181,7 @@ const MaterielList: React.FC = () => {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <button onClick={() => handlePrint(m.numero_inventaire)} className="text-blue-600 hover:text-blue-900 flex items-center">
+                                    <button onClick={() => handlePrint(m)} className="text-blue-600 hover:text-blue-900 flex items-center">
                                         <Printer className="w-4 h-4 mr-1" /> Barcode
                                     </button>
                                 </td>

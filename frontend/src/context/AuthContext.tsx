@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [session, setSession] = useState<Session | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [role, setRole] = useState<UserRole>(null);
-    const [loading, setLoading] = useState(false); // Default false for testing
+    const [loading, setLoading] = useState(true); // Default true to wait for session check
 
     console.log("AuthProvider initializing. Supabase client present?", !!supabase);
 

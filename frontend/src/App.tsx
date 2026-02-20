@@ -3,6 +3,7 @@ import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import MaterielList from './pages/MaterielList';
 import InventairePage from './pages/InventairePage';
+import InventaireDetails from './pages/InventaireDetails';
 import UsersPage from './pages/UsersPage';
 import Login from './pages/Login';
 import { AuthProvider } from './context/AuthContext';
@@ -20,8 +21,8 @@ function App() {
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
               <Route path="materiels" element={<MaterielList />} />
-              <Route path="materiels" element={<MaterielList />} />
               <Route path="inventaire" element={<InventairePage />} />
+              <Route path="inventaire/:id" element={<InventaireDetails />} />
               <Route path="users" element={<UsersPage />} />
             </Route>
           </Route>

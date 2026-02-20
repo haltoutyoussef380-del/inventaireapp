@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { inventaireService } from '../services/supabaseApi';
 import BarcodeScanner from '../components/BarcodeScanner';
-import { Play, PlusCircle, CheckCircle, AlertTriangle, List, ArrowLeft, Trophy } from 'lucide-react';
+import { Play, PlusCircle, CheckCircle, AlertTriangle, List, ArrowLeft, Trophy, BarChart2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const InventairePage: React.FC = () => {
@@ -139,6 +139,10 @@ const InventairePage: React.FC = () => {
                         <span>{myStats} Scans</span>
                     </div>
                 )}
+                {/* DEBUG ROLE to help user */}
+                <div className="text-xs text-gray-400 absolute top-0 right-0 mt-2 mr-2">
+                    Role: {role} (User: {user?.email})
+                </div>
             </div>
 
             {/* VUE LISTE DES CAMPAGNES */}
@@ -161,12 +165,23 @@ const InventairePage: React.FC = () => {
                                     <p>📅 Début: {new Date(camp.date_debut).toLocaleDateString()}</p>
                                     <p>📍 {camp.service_perimetre || 'Non spécifié'}</p>
                                 </div>
-                                <button
-                                    onClick={() => joinCampaign(camp.id)}
-                                    className="w-full bg-green-50 text-green-700 border border-green-200 py-2 rounded-lg font-bold hover:bg-green-100 flex items-center justify-center"
-                                >
-                                    <Play className="w-4 h-4 mr-2" /> Rejoindre
-                                </button>
+                                <div className="flex space-x-2">
+                                    <button
+                                        onClick={() => joinCampaign(camp.id)}
+                                        className="flex-1 bg-green-50 text-green-700 border border-green-200 py-2 rounded-lg font-bold hover:bg-green-100 flex items-center justify-center"
+                                    >
+                                        <Play className="w-4 h-4 mr-2" /> Rejoindre
+                                    </button>
+                                    {role === 'admin' && (
+                                        <button
+                                            onClick={() => window.location.href = `/inventaire/${camp.id}`}
+                                            className="bg-purple-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-purple-700 shadow flex items-center justify-center ml-2"
+                                            title="Tableau de bord"
+                                        >
+                                            <BarChart2 className="w-4 h-4 mr-2" /> Tableau de Bord
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         ))}
                     </div>
