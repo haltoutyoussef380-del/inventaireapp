@@ -182,26 +182,26 @@ const PrinterConfig: React.FC = () => {
                                 boxShadow: '0 10px 30px -5px rgba(0,0,0,0.1)',
                                 border: '1px solid #ddd',
                                 display: 'flex',
-                                alignItems: 'center',
-                                padding: '2mm',
+                                flexDirection: 'column',
+                                padding: '1mm',
                                 overflow: 'hidden'
                             }}
                             className="relative"
                         >
-                            <div className="flex items-center w-full">
-                                <div style={{ width: `${settings.logoWidth}mm` }} className="border-r border-gray-100 flex flex-col items-center pr-1">
+                            <div className="w-full text-left mb-1">
+                                <span style={{ fontSize: `${settings.fontSize}pt` }} className="font-bold truncate uppercase block">NOM DU MATÉRIEL</span>
+                                <span className="text-[6pt] text-gray-500 block">DESCRIPTION OU CATÉGORIE</span>
+                            </div>
+                            <div className="flex-1 flex items-end justify-between w-full">
+                                <div className="flex flex-col items-start">
+                                    <div className="w-[30mm] h-[10mm] bg-black bg-opacity-5 flex items-center justify-center mb-1">
+                                        <span className="text-[5pt] text-gray-400">BARCODE</span>
+                                    </div>
+                                    <span className="text-[7pt] font-mono font-bold">INV-2026-0001</span>
+                                </div>
+                                <div style={{ width: `${settings.logoWidth}mm` }} className="flex justify-end items-end">
                                     <div className="w-full aspect-square bg-gray-100 rounded flex items-center justify-center">
                                         <span className="text-[6pt] text-gray-400">LOGO</span>
-                                    </div>
-                                </div>
-                                <div className="flex-1 flex flex-col items-center justify-center px-2 h-full gap-1">
-                                    <div className="w-full border-bottom border-gray-100 pb-1 mb-1 flex flex-col items-center">
-                                        <span style={{ fontSize: `${settings.fontSize}pt` }} className="font-bold truncate uppercase block">MATÉRIEL</span>
-                                        <span className="text-[6pt] font-mono block">INV-0000123</span>
-                                        <span className="text-[5pt] font-bold opacity-50 uppercase">INVENTAIRE PSY</span>
-                                    </div>
-                                    <div className="w-full h-[18mm] bg-black bg-opacity-5 flex items-center justify-center">
-                                        <span className="text-[6pt] text-gray-400">CODE-BARRES</span>
                                     </div>
                                 </div>
                             </div>

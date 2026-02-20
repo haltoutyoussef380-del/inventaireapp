@@ -74,49 +74,17 @@ const MaterielList: React.FC = () => {
                             }
                             .label-container {
                                 display: flex;
-                                align-items: center;
+                                flex-direction: column;
                                 width: 100%;
                                 height: 100%;
                                 margin-left: ${s.marginLeft}mm;
                                 margin-top: ${s.marginTop}mm;
+                                padding: 1mm;
                             }
-                            .logo-section {
-                                width: ${s.logoWidth}mm;
-                                height: ${s.height}mm;
-                                display: flex;
-                                flex-direction: column;
-                                align-items: center;
-                                justify-content: center;
-                                border-right: 1px solid #ddd;
-                                padding: 0 1mm;
-                            }
-                            .logo-img {
-                                width: ${s.logoWidth - 2}mm;
-                                max-height: ${s.height - 4}mm;
-                                object-fit: contain;
-                            }
-                            .barcode-section {
-                                flex: 1;
-                                display: flex;
-                                flex-direction: column;
-                                align-items: center;
-                                justify-content: center;
-                                padding: 0 1mm;
-                            }
-                            .info-section {
+                            .header-section {
                                 width: 100%;
-                                display: flex;
-                                flex-direction: column;
-                                align-items: center;
-                                justify-content: center;
-                                margin-bottom: 0.5mm;
-                                border-bottom: 1px solid #eee;
-                                padding-bottom: 0.5mm;
-                            }
-                            .barcode-img {
-                                height: ${s.height * 0.75}mm;
-                                max-width: 95%;
-                                width: auto;
+                                margin-bottom: 2mm;
+                                text-align: left;
                             }
                             .name {
                                 font-size: ${s.fontSize}pt;
@@ -125,35 +93,61 @@ const MaterielList: React.FC = () => {
                                 white-space: nowrap;
                                 overflow: hidden;
                                 text-overflow: ellipsis;
-                                text-align: center;
+                            }
+                            .subtitle {
+                                font-size: ${s.fontSize - 3}pt;
+                                color: #444;
+                                margin-top: 0.5mm;
+                            }
+                            .bottom-row {
+                                flex: 1;
+                                display: flex;
+                                align-items: flex-end;
+                                justify-content: space-between;
+                                width: 100%;
+                            }
+                            .barcode-col {
+                                display: flex;
+                                flex-direction: column;
+                                align-items: flex-start;
+                            }
+                            .barcode-img {
+                                height: ${s.height * 0.45}mm;
+                                width: auto;
+                                margin-bottom: 0.5mm;
                             }
                             .inv-num {
-                                font-size: ${s.fontSize - 2}pt;
-                                margin-top: 0.1mm;
-                                font-family: monospace;
-                                text-align: center;
-                            }
-                            .footer-text {
-                                font-size: ${s.fontSize - 4}pt;
+                                font-size: ${s.fontSize - 1}pt;
                                 font-weight: bold;
-                                margin-top: 0.1mm;
-                                opacity: 0.7;
-                                text-align: center;
+                                font-family: monospace;
+                            }
+                            .logo-col {
+                                width: ${s.logoWidth}mm;
+                                display: flex;
+                                justify-content: flex-end;
+                                align-items: flex-end;
+                            }
+                            .logo-img {
+                                width: 100%;
+                                max-height: ${s.height * 0.5}mm;
+                                object-fit: contain;
                             }
                         </style>
                     </head>
                     <body>
                       <div class="label-container">
-                        <div class="logo-section">
-                            <img src="${window.location.origin}/logo.png" class="logo-img" />
+                        <div class="header-section">
+                            <div class="name">${materiel.nom}</div>
+                            <div class="subtitle">ZEBRA ZT411 : ETATS-UNIS</div>
                         </div>
-                        <div class="barcode-section">
-                            <div class="info-section">
-                                <div class="name">${materiel.nom}</div>
+                        <div class="bottom-row">
+                            <div class="barcode-col">
+                                <img src="${url}" class="barcode-img" onload="window.print();" />
                                 <div class="inv-num">${materiel.numero_inventaire}</div>
-                                <div class="footer-text">INVENTAIRE PSY</div>
                             </div>
-                            <img src="${url}" class="barcode-img" onload="window.print();" />
+                            <div class="logo-col">
+                                <img src="${window.location.origin}/logo.png" class="logo-img" />
+                            </div>
                         </div>
                       </div>
                     </body>
