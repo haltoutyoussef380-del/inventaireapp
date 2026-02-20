@@ -11,13 +11,19 @@ interface PrinterSettings {
 }
 
 const DEFAULT_SETTINGS: PrinterSettings = {
-    width: 114,
+    width: 50,
     height: 25,
     marginLeft: 0,
     marginTop: 0,
-    fontSize: 10,
-    logoWidth: 28
+    fontSize: 9,
+    logoWidth: 15
 };
+
+const PRESETS = [
+    { label: "Standard (114x25mm)", width: 114, height: 25, fontSize: 10, logoWidth: 28 },
+    { label: "Petit (50x25mm)", width: 50, height: 25, fontSize: 8, logoWidth: 15 },
+    { label: "Moyen (70x30mm)", width: 70, height: 30, fontSize: 9, logoWidth: 20 },
+];
 
 const PrinterConfig: React.FC = () => {
     const [settings, setSettings] = useState<PrinterSettings>(DEFAULT_SETTINGS);
@@ -33,6 +39,17 @@ const PrinterConfig: React.FC = () => {
             }
         }
     }, []);
+
+    const applyPreset = (preset: any) => {
+        setSettings(prev => ({
+            ...prev,
+            width: preset.width,
+            height: preset.height,
+            fontSize: preset.fontSize,
+            logoWidth: preset.logoWidth
+        }));
+        setSaved(false);
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -50,7 +67,7 @@ const PrinterConfig: React.FC = () => {
     };
 
     const handleReset = () => {
-        if (window.confirm("Réinitialiser aux valeurs par défaut (114x25mm) ?")) {
+        if (window.confirm("Réinitialiser aux valeurs par défaut ?")) {
             setSettings(DEFAULT_SETTINGS);
             setSaved(false);
         }
@@ -71,10 +88,25 @@ const PrinterConfig: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Form Section */}
                 <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-                    <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
                         <Settings size={20} className="text-gray-400" />
                         Paramètres du Support
                     </h2>
+
+                    <div className="mb-6">
+                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Pré-réglages rapides</label>
+                        <div className="flex flex-wrap gap-2">
+                            {PRESETS.map((p, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => applyPreset(p)}
+                                    className="px-3 py-1.5 bg-gray-50 hover:bg-purple-50 hover:text-purple-600 text-gray-600 text-xs font-semibold rounded-lg border border-gray-200 transition-colors"
+                                >
+                                    {p.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
 
                     <div className="space-y-6">
                         <div className="grid grid-cols-2 gap-4">

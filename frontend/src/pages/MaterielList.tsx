@@ -112,9 +112,9 @@ const MaterielList: React.FC = () => {
                                 align-items: flex-start;
                             }
                             .barcode-img {
-                                height: ${s.height * 0.45}mm;
+                                height: ${s.height * 0.52}mm;
                                 width: auto;
-                                margin-bottom: 0.5mm;
+                                margin-bottom: 0.2mm;
                             }
                             .inv-num {
                                 font-size: ${s.fontSize - 1}pt;
