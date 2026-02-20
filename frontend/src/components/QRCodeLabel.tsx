@@ -38,6 +38,7 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
       printWindow.document.write(`
         <html>
           <head>
+            <title>Etiquette ${materiel.numero_inventaire}</title>
             <style>
               @page { 
                 size: ${s.width}mm ${s.height}mm; 
@@ -63,13 +64,14 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                 margin-left: ${s.marginLeft}mm;
                 margin-top: ${s.marginTop}mm;
               }
-              .qr-code { margin-bottom: 2mm; }
+              .qr-code { margin-bottom: 1mm; }
+              .qr-code svg { width: ${s.height * 0.5}mm !important; height: ${s.height * 0.5}mm !important; }
               .info { 
                 width: 100%;
                 font-size: ${s.fontSize}px; 
                 font-weight: bold; 
                 text-align: center;
-                margin-bottom: 2mm;
+                margin-bottom: 1mm;
                 border-bottom: 1px solid #eee;
                 padding-bottom: 1mm;
               }
@@ -112,7 +114,7 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
       <div style={{ display: 'none' }}>
         <div ref={printRef} className="label-container">
           <div className="qr-code">
-            <QRCodeSVG value={materiel.numero_inventaire} size={80} />
+            <QRCodeSVG value={materiel.numero_inventaire} size={120} />
           </div>
           <div className="info">
             <span className="title">{materiel.nom.substring(0, 20)}</span>

@@ -200,7 +200,7 @@ const PrinterConfig: React.FC = () => {
                                         <span className="text-[6pt] font-mono block">INV-0000123</span>
                                         <span className="text-[5pt] font-bold opacity-50 uppercase">INVENTAIRE PSY</span>
                                     </div>
-                                    <div className="w-full h-[15mm] bg-black bg-opacity-5 flex items-center justify-center">
+                                    <div className="w-full h-[18mm] bg-black bg-opacity-5 flex items-center justify-center">
                                         <span className="text-[6pt] text-gray-400">CODE-BARRES</span>
                                     </div>
                                 </div>

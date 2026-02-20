@@ -40,6 +40,7 @@ const MaterielList: React.FC = () => {
             win.document.write(`
                 <html>
                     <head>
+                        <title>Etiquette ${materiel.numero_inventaire}</title>
                         <style>
                             @page { 
                                 size: ${s.width}mm ${s.height}mm; 
@@ -79,13 +80,6 @@ const MaterielList: React.FC = () => {
                                 object-fit: contain;
                                 margin-bottom: 0.5mm;
                             }
-                            .hosp-text {
-                                font-size: 5pt;
-                                text-align: center;
-                                font-weight: bold;
-                                text-transform: uppercase;
-                                line-height: 1;
-                            }
                             .barcode-section {
                                 flex: 1;
                                 display: flex;
@@ -105,7 +99,7 @@ const MaterielList: React.FC = () => {
                                 padding-bottom: 1mm;
                             }
                             .barcode-img {
-                                height: ${s.height * 0.5}mm;
+                                height: ${s.height * 0.7}mm;
                                 width: auto;
                             }
                             .name {
