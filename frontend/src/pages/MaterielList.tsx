@@ -23,72 +23,90 @@ const MaterielList: React.FC = () => {
     }, []);
 
     const handlePrint = (materiel: any) => {
+        // Load dynamic settings or use defaults
+        const stored = localStorage.getItem('zebra_printer_settings');
+        const s = stored ? JSON.parse(stored) : {
+            width: 114,
+            height: 25,
+            marginLeft: 0,
+            marginTop: 0,
+            fontSize: 10,
+            logoWidth: 28
+        };
+
         const url = materielService.getBarcodeUrl(materiel.numero_inventaire);
-        const win = window.open('', '_blank');
+        const win = window.open('', '_blank', `width=${s.width * 4},height=${s.height * 4}`);
         if (win) {
             win.document.write(`
                 <html>
                     <head>
                         <style>
-                            @page {
-                                size: 114mm 25mm;
-                                margin: 0;
+                            @page { 
+                                size: ${s.width}mm ${s.height}mm; 
+                                margin: 0; 
                             }
-                            body {
-                                margin: 0;
+                            body { 
+                                margin: 0; 
                                 padding: 0;
-                                width: 114mm;
-                                height: 25mm;
+                                width: ${s.width}mm;
+                                height: ${s.height}mm;
                                 display: flex;
                                 align-items: center;
                                 justify-content: flex-start;
                                 font-family: 'Arial', sans-serif;
                                 overflow: hidden;
                             }
+                            .label-container {
+                                display: flex;
+                                align-items: center;
+                                width: 100%;
+                                height: 100%;
+                                margin-left: ${s.marginLeft}mm;
+                                margin-top: ${s.marginTop}mm;
+                            }
                             .logo-section {
-                                width: 35mm;
-                                height: 25mm;
+                                width: ${s.logoWidth}mm;
+                                height: ${s.height}mm;
                                 display: flex;
                                 flex-direction: column;
                                 align-items: center;
                                 justify-content: center;
                                 border-right: 1px solid #ddd;
-                                padding: 0 2mm;
+                                padding: 0 1mm;
                             }
                             .logo-img {
-                                width: 28mm;
+                                width: ${s.logoWidth - 2}mm;
                                 object-fit: contain;
-                                margin-bottom: 1mm;
+                                margin-bottom: 0.5mm;
                             }
                             .hosp-text {
-                                font-size: 6pt;
+                                font-size: 5pt;
                                 text-align: center;
                                 font-weight: bold;
                                 text-transform: uppercase;
-                                line-height: 1.1;
+                                line-height: 1;
                             }
                             .barcode-section {
                                 flex: 1;
                                 display: flex;
-                                flex-direction: column;
                                 align-items: center;
                                 justify-content: center;
-                                padding: 0 2mm;
+                                padding: 0 1mm;
                             }
                             .barcode-img {
-                                height: 16mm;
+                                height: ${s.height * 0.7}mm;
                                 width: auto;
                             }
                             .info-section {
                                 width: 35mm;
-                                padding-left: 2mm;
+                                padding-left: 1mm;
                                 border-left: 1px solid #ddd;
                                 display: flex;
                                 flex-direction: column;
                                 justify-content: center;
                             }
                             .name {
-                                font-size: 10pt;
+                                font-size: ${s.fontSize}pt;
                                 font-weight: bold;
                                 text-transform: uppercase;
                                 white-space: nowrap;
@@ -96,30 +114,33 @@ const MaterielList: React.FC = () => {
                                 text-overflow: ellipsis;
                             }
                             .inv-num {
-                                font-size: 9pt;
-                                margin-top: 1mm;
+                                font-size: ${s.fontSize - 1}pt;
+                                margin-top: 0.5mm;
                                 font-family: monospace;
                             }
                             .footer-text {
-                                font-size: 7pt;
+                                font-size: ${s.fontSize - 3}pt;
                                 font-weight: bold;
-                                margin-top: 1mm;
+                                margin-top: 0.5mm;
+                                opacity: 0.7;
                             }
                         </style>
                     </head>
                     <body>
+                      <div class="label-container">
                         <div class="logo-section">
                             <img src="${window.location.origin}/logo.png" class="logo-img" />
                             <div class="hosp-text">Hopital Universitaire Psychiatrique</div>
                         </div>
                         <div class="barcode-section">
-                            <img src="${url}" class="barcode-img" onload="window.print(); window.close();" />
+                            <img src="${url}" class="barcode-img" onload="window.print(); setTimeout(() => window.close(), 500);" />
                         </div>
                         <div class="info-section">
                             <div class="name">${materiel.nom}</div>
                             <div class="inv-num">${materiel.numero_inventaire}</div>
                             <div class="footer-text">INVENTAIRE PSY</div>
                         </div>
+                      </div>
                     </body>
                 </html>
             `);

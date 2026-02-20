@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Outlet } from 'react-router-dom';
-import { LayoutDashboard, Package, ClipboardList, Menu, Users } from 'lucide-react';
+import { LayoutDashboard, Package, ClipboardList, Menu, Users, Settings } from 'lucide-react';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 
@@ -39,10 +39,16 @@ const Layout: React.FC = () => {
 
                     {/* Lien Admin seulement */}
                     {role === 'admin' && (
-                        <Link to="/users" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-md" onClick={() => setSidebarOpen(false)}>
-                            <Users className="w-5 h-5 mr-3" />
-                            Agents
-                        </Link>
+                        <>
+                            <Link to="/users" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-md" onClick={() => setSidebarOpen(false)}>
+                                <Users className="w-5 h-5 mr-3" />
+                                Agents
+                            </Link>
+                            <Link to="/printer-config" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-md" onClick={() => setSidebarOpen(false)}>
+                                <Settings className="w-5 h-5 mr-3" />
+                                Config Imprimante
+                            </Link>
+                        </>
                     )}
 
                     <button

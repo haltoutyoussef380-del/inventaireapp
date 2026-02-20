@@ -5,6 +5,7 @@ import MaterielList from './pages/MaterielList';
 import InventairePage from './pages/InventairePage';
 import InventaireDetails from './pages/InventaireDetails';
 import UsersPage from './pages/UsersPage';
+import PrinterConfig from './pages/PrinterConfig';
 import Login from './pages/Login';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -24,6 +25,7 @@ function App() {
               <Route path="inventaire" element={<InventairePage />} />
               <Route path="inventaire/:id" element={<InventaireDetails />} />
               <Route path="users" element={<UsersPage />} />
+              <Route path="printer-config" element={<PrinterConfig />} />
             </Route>
           </Route>
 
