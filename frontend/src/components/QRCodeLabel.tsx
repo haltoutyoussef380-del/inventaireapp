@@ -29,13 +29,23 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
       logoWidth: 28
     };
 
-    const windowUrl = 'about:blank';
-    const uniqueName = new Date().getTime();
-    const windowName = 'Print' + uniqueName;
-    const printWindow = window.open(windowUrl, windowName, `width=${s.width * 4},height=${s.height * 4}`);
+    // Create a hidden iframe for printing
+    let iframe = document.getElementById('print-iframe') as HTMLIFrameElement;
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'print-iframe';
+      iframe.style.position = 'absolute';
+      iframe.style.width = '0px';
+      iframe.style.height = '0px';
+      iframe.style.border = 'none';
+      document.body.appendChild(iframe);
+    }
 
-    if (printWindow) {
-      printWindow.document.write(`
+    const doc = iframe.contentWindow?.document || iframe.contentDocument;
+    if (!doc) return;
+
+    doc.open();
+    doc.write(`
         <html>
           <head>
             <title>Etiquette ${materiel.numero_inventaire}</title>
@@ -65,7 +75,7 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                 margin-top: ${s.marginTop}mm;
               }
               .qr-code { margin-bottom: 1mm; }
-              .qr-code svg { width: ${s.height * 0.5}mm !important; height: ${s.height * 0.5}mm !important; }
+              .qr-code svg { width: ${s.height * 0.7}mm !important; height: ${s.height * 0.7}mm !important; }
               .info { 
                 width: 100%;
                 font-size: ${s.fontSize}px; 
@@ -75,8 +85,8 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                 border-bottom: 1px solid #eee;
                 padding-bottom: 1mm;
               }
-              .title { font-size: ${s.fontSize + 2}px; margin-bottom: 2px; display: block; }
-              .id { font-size: ${s.fontSize - 2}px; color: gray; margin-top: 2px; display: block; }
+              .title { font-size: ${s.fontSize + 2}px; margin-bottom: 1px; display: block; }
+              .id { font-size: ${s.fontSize - 2}px; color: gray; margin-top: 1px; display: block; }
               @media print {
                 body { margin: 0; }
                 .no-print { display: none; }
@@ -94,18 +104,15 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                 ${printContent.querySelector('.qr-code')?.innerHTML || ''}
               </div>
             </div>
-            <script>
-              setTimeout(() => {
-                window.print();
-                window.close();
-              }, 500);
-            </script>
           </body>
         </html>
       `);
-      printWindow.document.close();
-      printWindow.focus();
-    }
+    doc.close();
+
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+    }, 800);
   };
 
   return (

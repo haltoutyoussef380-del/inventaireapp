@@ -35,9 +35,24 @@ const MaterielList: React.FC = () => {
         };
 
         const url = materielService.getBarcodeUrl(materiel.numero_inventaire);
-        const win = window.open('', '_blank', `width=${s.width * 4},height=${s.height * 4}`);
-        if (win) {
-            win.document.write(`
+
+        // Create a hidden iframe for printing
+        let iframe = document.getElementById('print-iframe') as HTMLIFrameElement;
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.id = 'print-iframe';
+            iframe.style.position = 'absolute';
+            iframe.style.width = '0px';
+            iframe.style.height = '0px';
+            iframe.style.border = 'none';
+            document.body.appendChild(iframe);
+        }
+
+        const doc = iframe.contentWindow?.document || iframe.contentDocument;
+        if (!doc) return;
+
+        doc.open();
+        doc.write(`
                 <html>
                     <head>
                         <title>Etiquette ${materiel.numero_inventaire}</title>
@@ -77,8 +92,8 @@ const MaterielList: React.FC = () => {
                             }
                             .logo-img {
                                 width: ${s.logoWidth - 2}mm;
+                                max-height: ${s.height - 4}mm;
                                 object-fit: contain;
-                                margin-bottom: 0.5mm;
                             }
                             .barcode-section {
                                 flex: 1;
@@ -94,12 +109,13 @@ const MaterielList: React.FC = () => {
                                 flex-direction: column;
                                 align-items: center;
                                 justify-content: center;
-                                margin-bottom: 1mm;
+                                margin-bottom: 0.5mm;
                                 border-bottom: 1px solid #eee;
-                                padding-bottom: 1mm;
+                                padding-bottom: 0.5mm;
                             }
                             .barcode-img {
-                                height: ${s.height * 0.7}mm;
+                                height: ${s.height * 0.75}mm;
+                                max-width: 95%;
                                 width: auto;
                             }
                             .name {
@@ -113,14 +129,14 @@ const MaterielList: React.FC = () => {
                             }
                             .inv-num {
                                 font-size: ${s.fontSize - 2}pt;
-                                margin-top: 0.2mm;
+                                margin-top: 0.1mm;
                                 font-family: monospace;
                                 text-align: center;
                             }
                             .footer-text {
                                 font-size: ${s.fontSize - 4}pt;
                                 font-weight: bold;
-                                margin-top: 0.2mm;
+                                margin-top: 0.1mm;
                                 opacity: 0.7;
                                 text-align: center;
                             }
@@ -137,14 +153,18 @@ const MaterielList: React.FC = () => {
                                 <div class="inv-num">${materiel.numero_inventaire}</div>
                                 <div class="footer-text">INVENTAIRE PSY</div>
                             </div>
-                            <img src="${url}" class="barcode-img" onload="window.print(); setTimeout(() => window.close(), 500);" />
+                            <img src="${url}" class="barcode-img" onload="window.print();" />
                         </div>
                       </div>
                     </body>
                 </html>
             `);
-            win.document.close();
-        }
+        doc.close();
+
+        setTimeout(() => {
+            iframe.contentWindow?.focus();
+            iframe.contentWindow?.print();
+        }, 800);
     };
 
     return (
