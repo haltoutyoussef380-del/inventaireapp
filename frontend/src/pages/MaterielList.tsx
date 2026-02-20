@@ -130,7 +130,6 @@ const MaterielList: React.FC = () => {
                       <div class="label-container">
                         <div class="logo-section">
                             <img src="${window.location.origin}/logo.png" class="logo-img" />
-                            <div class="hosp-text">Hopital Universitaire Psychiatrique</div>
                         </div>
                         <div class="barcode-section">
                             <img src="${url}" class="barcode-img" onload="window.print(); setTimeout(() => window.close(), 500);" />

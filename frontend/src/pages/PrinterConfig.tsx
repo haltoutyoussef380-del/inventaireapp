@@ -190,10 +190,9 @@ const PrinterConfig: React.FC = () => {
                         >
                             <div className="flex items-center w-full">
                                 <div style={{ width: `${settings.logoWidth}mm` }} className="border-r border-gray-100 flex flex-col items-center pr-1">
-                                    <div className="w-full aspect-square bg-gray-100 rounded flex items-center justify-center mb-0.5">
+                                    <div className="w-full aspect-square bg-gray-100 rounded flex items-center justify-center">
                                         <span className="text-[6pt] text-gray-400">LOGO</span>
                                     </div>
-                                    <span className="text-[4pt] font-bold text-center leading-tight">HOPITAL PSY</span>
                                 </div>
                                 <div className="flex-1 flex items-center justify-center border-r border-gray-100 px-2 h-full">
                                     <div className="w-full h-[15mm] bg-black bg-opacity-5 flex items-center justify-center">
