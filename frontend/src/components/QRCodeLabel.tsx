@@ -54,16 +54,25 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
               .label-container { 
                 width: 100%;
                 height: 100%;
-                padding: 2mm; 
+                padding: 1mm; 
                 display: flex; 
-                flex-direction: row; 
+                flex-direction: column; 
                 align-items: center;
+                justify-content: center;
                 break-inside: avoid;
                 margin-left: ${s.marginLeft}mm;
                 margin-top: ${s.marginTop}mm;
               }
-              .qr-code { margin-right: 25px; }
-              .info { font-size: ${s.fontSize}px; font-weight: bold; }
+              .qr-code { margin-bottom: 2mm; }
+              .info { 
+                width: 100%;
+                font-size: ${s.fontSize}px; 
+                font-weight: bold; 
+                text-align: center;
+                margin-bottom: 2mm;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 1mm;
+              }
               .title { font-size: ${s.fontSize + 2}px; margin-bottom: 2px; display: block; }
               .id { font-size: ${s.fontSize - 2}px; color: gray; margin-top: 2px; display: block; }
               @media print {
@@ -73,7 +82,16 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
             </style>
           </head>
           <body>
-            ${printContent.innerHTML}
+            <div class="label-container">
+              <div class="info">
+                <span class="title">${materiel.nom.substring(0, 30)}</span>
+                <span class="id">#${materiel.numero_inventaire}</span>
+                <div style="font-size: ${s.fontSize - 4}px; opacity: 0.7; margin-top: 2px;">INVENTAIRE PSY</div>
+              </div>
+              <div class="qr-code">
+                ${printContent.querySelector('.qr-code')?.innerHTML || ''}
+              </div>
+            </div>
             <script>
               setTimeout(() => {
                 window.print();

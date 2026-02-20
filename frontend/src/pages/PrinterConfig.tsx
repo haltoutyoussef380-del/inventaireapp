@@ -194,15 +194,15 @@ const PrinterConfig: React.FC = () => {
                                         <span className="text-[6pt] text-gray-400">LOGO</span>
                                     </div>
                                 </div>
-                                <div className="flex-1 flex items-center justify-center border-r border-gray-100 px-2 h-full">
+                                <div className="flex-1 flex flex-col items-center justify-center px-2 h-full gap-1">
+                                    <div className="w-full border-bottom border-gray-100 pb-1 mb-1 flex flex-col items-center">
+                                        <span style={{ fontSize: `${settings.fontSize}pt` }} className="font-bold truncate uppercase block">MATÉRIEL</span>
+                                        <span className="text-[6pt] font-mono block">INV-0000123</span>
+                                        <span className="text-[5pt] font-bold opacity-50 uppercase">INVENTAIRE PSY</span>
+                                    </div>
                                     <div className="w-full h-[15mm] bg-black bg-opacity-5 flex items-center justify-center">
                                         <span className="text-[6pt] text-gray-400">CODE-BARRES</span>
                                     </div>
-                                </div>
-                                <div className="pl-2 flex flex-col justify-center overflow-hidden">
-                                    <span style={{ fontSize: `${settings.fontSize}pt` }} className="font-bold truncate uppercase block">MATÉRIEL</span>
-                                    <span className="text-[6pt] font-mono block">INV-0000123</span>
-                                    <span className="text-[5pt] font-bold mt-0.5 opacity-50 uppercase">INVENTAIRE PSY</span>
                                 </div>
                             </div>
                         </div>

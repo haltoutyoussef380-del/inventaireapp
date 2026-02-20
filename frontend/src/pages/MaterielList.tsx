@@ -89,21 +89,24 @@ const MaterielList: React.FC = () => {
                             .barcode-section {
                                 flex: 1;
                                 display: flex;
+                                flex-direction: column;
                                 align-items: center;
                                 justify-content: center;
                                 padding: 0 1mm;
                             }
-                            .barcode-img {
-                                height: ${s.height * 0.7}mm;
-                                width: auto;
-                            }
                             .info-section {
-                                width: 35mm;
-                                padding-left: 1mm;
-                                border-left: 1px solid #ddd;
+                                width: 100%;
                                 display: flex;
                                 flex-direction: column;
+                                align-items: center;
                                 justify-content: center;
+                                margin-bottom: 1mm;
+                                border-bottom: 1px solid #eee;
+                                padding-bottom: 1mm;
+                            }
+                            .barcode-img {
+                                height: ${s.height * 0.5}mm;
+                                width: auto;
                             }
                             .name {
                                 font-size: ${s.fontSize}pt;
@@ -112,17 +115,20 @@ const MaterielList: React.FC = () => {
                                 white-space: nowrap;
                                 overflow: hidden;
                                 text-overflow: ellipsis;
+                                text-align: center;
                             }
                             .inv-num {
-                                font-size: ${s.fontSize - 1}pt;
-                                margin-top: 0.5mm;
+                                font-size: ${s.fontSize - 2}pt;
+                                margin-top: 0.2mm;
                                 font-family: monospace;
+                                text-align: center;
                             }
                             .footer-text {
-                                font-size: ${s.fontSize - 3}pt;
+                                font-size: ${s.fontSize - 4}pt;
                                 font-weight: bold;
-                                margin-top: 0.5mm;
+                                margin-top: 0.2mm;
                                 opacity: 0.7;
+                                text-align: center;
                             }
                         </style>
                     </head>
@@ -132,12 +138,12 @@ const MaterielList: React.FC = () => {
                             <img src="${window.location.origin}/logo.png" class="logo-img" />
                         </div>
                         <div class="barcode-section">
+                            <div class="info-section">
+                                <div class="name">${materiel.nom}</div>
+                                <div class="inv-num">${materiel.numero_inventaire}</div>
+                                <div class="footer-text">INVENTAIRE PSY</div>
+                            </div>
                             <img src="${url}" class="barcode-img" onload="window.print(); setTimeout(() => window.close(), 500);" />
-                        </div>
-                        <div class="info-section">
-                            <div class="name">${materiel.nom}</div>
-                            <div class="inv-num">${materiel.numero_inventaire}</div>
-                            <div class="footer-text">INVENTAIRE PSY</div>
                         </div>
                       </div>
                     </body>
