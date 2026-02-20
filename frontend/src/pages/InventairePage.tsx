@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { inventaireService } from '../services/supabaseApi';
 import BarcodeScanner from '../components/BarcodeScanner';
 import { Play, PlusCircle, CheckCircle, AlertTriangle, List, ArrowLeft, Trophy, BarChart2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const InventairePage: React.FC = () => {
     const { user, role } = useAuth();
+    const navigate = useNavigate();
 
     // Navigation
     const [view, setView] = useState<'list' | 'create' | 'scan'>('list');
@@ -174,7 +176,7 @@ const InventairePage: React.FC = () => {
                                     </button>
                                     {role === 'admin' && (
                                         <button
-                                            onClick={() => window.location.href = `/inventaire/${camp.id}`}
+                                            onClick={() => navigate(`/inventaire/${camp.id}`)}
                                             className="bg-purple-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-purple-700 shadow flex items-center justify-center ml-2"
                                             title="Tableau de bord"
                                         >
