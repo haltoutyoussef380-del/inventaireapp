@@ -138,8 +138,8 @@ const MaterielList: React.FC = () => {
                                 align-items: center;
                             }
                             .logo-img {
-                                max-width: 90%;
-                                max-height: ${s.height * 0.58}mm; /* Match QR height */
+                                max-width: 95%; /* Slightly more width for the larger logo */
+                                max-height: ${s.height * 0.58 + 2}mm; /* Match QR height + 2mm */
                                 object-fit: contain;
                             }
                         </style>
