@@ -99,20 +99,23 @@ const MaterielList: React.FC = () => {
                                 text-overflow: ellipsis;
                             }
                             .subtitle {
-                                font-size: ${s.fontSize - 3}pt;
+                                font-size: ${s.fontSize}pt; /* Same as name */
                                 color: #444;
-                                margin-top: 0.2mm;
+                                margin-top: 0.1mm;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
                             }
                             .bottom-row {
                                 flex: 1;
                                 display: flex;
                                 align-items: center;
                                 justify-content: center;
-                                gap: 1mm;
                                 width: 100%;
                                 overflow: hidden;
                             }
                             .col-left {
+                                width: 50%;
                                 display: flex;
                                 flex-direction: column;
                                 align-items: center;
@@ -129,15 +132,14 @@ const MaterielList: React.FC = () => {
                                 font-family: monospace;
                             }
                             .col-right {
+                                width: 50%;
                                 display: flex;
                                 justify-content: center;
                                 align-items: center;
-                                width: ${s.logoWidth}mm;
-                                height: ${s.height * 0.65}mm;
                             }
                             .logo-img {
-                                width: 100%;
-                                max-height: 100%;
+                                max-width: 90%;
+                                max-height: ${s.height * 0.58}mm; /* Match QR height */
                                 object-fit: contain;
                             }
                         </style>

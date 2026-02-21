@@ -220,13 +220,13 @@ const PrinterConfig: React.FC = () => {
                             }}
                             className="relative"
                         >
-                            <div className="w-full text-left mb-1">
+                            <div className="mb-2">
                                 <span style={{ fontSize: `${settings.fontSize}pt` }} className="font-bold truncate uppercase block">NOM DU MATÉRIEL</span>
-                                <span className="text-[6pt] text-gray-500 block">DESCRIPTION OU CATÉGORIE</span>
+                                <span style={{ fontSize: `${settings.fontSize}pt` }} className="text-gray-500 block truncate">HP - MARQUE MATÉRIEL</span>
                             </div>
-                            <div className="flex-1 flex items-center justify-center gap-1 w-full">
-                                <div className="flex flex-col items-center">
-                                    <div className="w-[15mm] h-[15mm] bg-black bg-opacity-5 flex items-center justify-center mb-1 border border-dashed border-gray-300">
+                            <div className="flex-1 flex items-center justify-center w-full">
+                                <div className="w-1/2 flex flex-col items-center">
+                                    <div className="w-[12mm] h-[12mm] bg-black bg-opacity-5 flex items-center justify-center mb-1 border border-dashed border-gray-300">
                                         <div className="grid grid-cols-3 gap-0.5 p-1 w-full h-full opacity-20">
                                             <div className="bg-black"></div><div className="bg-black"></div><div className="bg-black"></div>
                                             <div className="bg-black"></div><div className="border border-black"></div><div className="bg-black"></div>
@@ -235,8 +235,8 @@ const PrinterConfig: React.FC = () => {
                                     </div>
                                     <span style={{ fontSize: `${settings.fontSize - 2}pt` }} className="font-mono font-bold leading-none">INV-2026-0001</span>
                                 </div>
-                                <div style={{ width: `${settings.logoWidth}mm` }} className="flex justify-center items-center h-[15mm]">
-                                    <div className="w-full h-full bg-gray-100 rounded flex items-center justify-center">
+                                <div className="w-1/2 flex justify-center items-center">
+                                    <div className="w-full h-[12mm] bg-gray-100 rounded flex items-center justify-center max-w-[90%]">
                                         <span className="text-[6pt] text-gray-400">LOGO</span>
                                     </div>
                                 </div>

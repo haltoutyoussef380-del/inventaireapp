@@ -80,19 +80,28 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                 border-bottom: 0.1mm solid #eee;
                 padding-bottom: 0.5mm;
               }
-              .title { font-size: ${s.fontSize}pt; font-weight: bold; margin-bottom: 1px; display: block; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-              .subtitle { font-size: ${s.fontSize - 3}pt; color: #444; display: block; }
-              
+              .title {
+                font-size: ${s.fontSize}pt;
+                font-weight: bold;
+                text-transform: uppercase;
+                display: block;
+              }
+              .subtitle {
+                font-size: ${s.fontSize}pt; /* Same as title */
+                color: #444;
+                display: block;
+                margin-top: 0.1mm;
+              }
               .content-row {
                 width: 100%;
                 display: flex;
                 flex: 1;
                 align-items: center;
                 justify-content: center;
-                gap: 1mm;
                 overflow: hidden;
               }
               .qr-col {
+                width: 50%;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -106,15 +115,14 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
               .id { font-size: ${s.fontSize - 1}pt; font-weight: bold; font-family: monospace; }
               
               .logo-col {
-                width: ${s.logoWidth}mm;
+                width: 50%;
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                height: ${s.height * 0.65}mm;
               }
               .logo-img {
-                width: 100%;
-                max-height: 100%;
+                max-width: 90%;
+                max-height: ${s.height * 0.58}mm; /* Match QR height */
                 object-fit: contain;
               }
 
