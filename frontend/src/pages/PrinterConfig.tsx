@@ -236,7 +236,7 @@ const PrinterConfig: React.FC = () => {
                                     <span style={{ fontSize: `${settings.fontSize - 2}pt` }} className="font-mono font-bold leading-none">INV-2026-0001</span>
                                 </div>
                                 <div className="w-1/2 flex justify-center items-center">
-                                    <div className="w-full h-[14mm] bg-gray-100 rounded flex items-center justify-center max-w-[95%]">
+                                    <div className="w-full h-[15mm] bg-gray-100 rounded flex items-center justify-center max-w-[95%]">
                                         <span className="text-[6pt] text-gray-400">LOGO</span>
                                     </div>
                                 </div>

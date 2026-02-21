@@ -121,8 +121,8 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                 align-items: center;
               }
               .logo-img {
-                max-width: 95%; /* Slightly more width for the larger logo */
-                max-height: ${s.height * 0.58 + 2}mm; /* Match QR height + 2mm */
+                max-width: 95%; 
+                max-height: ${s.height * 0.58 + 3}mm; /* Match QR height + 3mm */
                 object-fit: contain;
               }
 
