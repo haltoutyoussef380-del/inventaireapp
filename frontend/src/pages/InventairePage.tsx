@@ -22,6 +22,7 @@ const InventairePage: React.FC = () => {
     const [lastScan, setLastScan] = useState<{ status: 'success' | 'error', msg: string, item?: any } | null>(null);
     const [pendingMateriel, setPendingMateriel] = useState<any | null>(null);
     const [myStats, setMyStats] = useState(0);
+    const [isConfirming, setIsConfirming] = useState(false);
 
     // Chargement des campagnes au démarrage
     useEffect(() => {
@@ -91,7 +92,8 @@ const InventairePage: React.FC = () => {
     };
 
     const confirmScan = async () => {
-        if (!pendingMateriel || !inventaireId || !user) return;
+        if (!pendingMateriel || !inventaireId || !user || isConfirming) return;
+        setIsConfirming(true);
 
         try {
             await inventaireService.confirmScan({
@@ -111,6 +113,8 @@ const InventairePage: React.FC = () => {
             console.error(error);
             setLastScan({ status: 'error', msg: error.message || 'Erreur confirmation' });
             setPendingMateriel(null);
+        } finally {
+            setIsConfirming(false);
         }
     };
 
@@ -258,9 +262,10 @@ const InventairePage: React.FC = () => {
                                     </button>
                                     <button
                                         onClick={confirmScan}
-                                        className="py-4 rounded-xl font-bold text-white bg-green-600 hover:bg-green-700 shadow-lg shadow-green-200 transition-all transform active:scale-95"
+                                        disabled={isConfirming}
+                                        className={`py-4 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 ${isConfirming ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 shadow-green-200'}`}
                                     >
-                                        Valider
+                                        {isConfirming ? 'Confirmation...' : 'Valider'}
                                     </button>
                                 </div>
                             </div>

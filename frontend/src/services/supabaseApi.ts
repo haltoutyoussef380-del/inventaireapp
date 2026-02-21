@@ -118,10 +118,10 @@ export const inventaireService = {
             .select('id')
             .eq('inventaire_id', scanData.inventaire_id)
             .eq('materiel_id', scanData.materiel_id)
-            .single();
+            .maybeSingle(); // Better: doesn't throw 406 if not found
 
         if (existing) {
-            throw new Error('Déjà scanné dans cet inventaire');
+            throw new Error('Déjà scanné dans cette campagne');
         }
 
         const { data: ligne, error: lineError } = await supabase
@@ -134,7 +134,6 @@ export const inventaireService = {
             }])
             .select()
             .single();
-
 
         if (lineError) throw lineError;
         return ligne;

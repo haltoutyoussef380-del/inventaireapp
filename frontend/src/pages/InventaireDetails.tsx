@@ -41,6 +41,7 @@ const InventaireDetails: React.FC = () => {
 
     const loadData = async () => {
         if (!id) return;
+        console.log("Loading inventory details for ID:", id);
         setLoading(true);
         try {
             // 1. Get Inventory Info
@@ -48,21 +49,26 @@ const InventaireDetails: React.FC = () => {
             setInventaireInfo(inv);
 
             // 2. Get Scanned Items (with Materiel details and Profile name)
+            // Robust join: fetch everything from profile to see what's available
             const { data: scans, error: scanError } = await supabase
                 .from('inventaire_lignes')
                 .select(`
                     *,
                     materiel:materiels(*),
-                    agent:scanne_par(full_name) 
+                    agent:scanne_par(*) 
                 `)
                 .eq('inventaire_id', id);
 
-            if (scanError) throw scanError;
+            if (scanError) {
+                console.error("Scan fetch error:", scanError);
+                throw scanError;
+            }
+            console.log("Scans fetched:", scans?.length);
 
             // Flatten data for easier use
             const formattedScans = scans.map((line: any) => ({
                 ...line,
-                agent_name: line.agent?.full_name || 'Inconnu',
+                agent_name: line.agent?.full_name || line.agent?.email || 'Inconnu',
                 created_at: line.date_scan || line.created_at // Compatibility
             }));
             setScannedItems(formattedScans);
