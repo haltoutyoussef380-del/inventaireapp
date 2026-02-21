@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { materielService } from '../services/supabaseApi';
 import MaterielForm from '../components/MaterielForm';
 import { Printer } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { QRCodeSVG } from 'qrcode.react';
 
 const MaterielList: React.FC = () => {
     const [materiels, setMateriels] = useState([]);
     const [showForm, setShowForm] = useState(false);
     const { role } = useAuth();
+    const qrContainerRef = useRef<HTMLDivElement>(null);
 
     const loadData = async () => {
         try {
@@ -26,15 +28,17 @@ const MaterielList: React.FC = () => {
         // Load dynamic settings or use defaults
         const stored = localStorage.getItem('zebra_printer_settings');
         const s = stored ? JSON.parse(stored) : {
-            width: 114,
+            width: 50,
             height: 25,
             marginLeft: 0,
             marginTop: 0,
-            fontSize: 10,
-            logoWidth: 28
+            fontSize: 9,
+            logoWidth: 15
         };
 
-        const url = materielService.getBarcodeUrl(materiel.numero_inventaire);
+        // Get QR code SVG from the hidden container (we'll update it temporarily)
+        const qrContainer = qrContainerRef.current;
+        if (!qrContainer) return;
 
         // Create a hidden iframe for printing
         let iframe = document.getElementById('print-iframe') as HTMLIFrameElement;
@@ -55,7 +59,7 @@ const MaterielList: React.FC = () => {
         doc.write(`
                 <html>
                     <head>
-                        <title>Etiquette ${materiel.numero_inventaire}</title>
+                        <title>Etiquette QR ${materiel.numero_inventaire}</title>
                         <style>
                             @page { 
                                 size: ${s.width}mm ${s.height}mm; 
@@ -66,9 +70,6 @@ const MaterielList: React.FC = () => {
                                 padding: 0;
                                 width: ${s.width}mm;
                                 height: ${s.height}mm;
-                                display: flex;
-                                align-items: center;
-                                justify-content: flex-start;
                                 font-family: 'Arial', sans-serif;
                                 overflow: hidden;
                             }
@@ -80,11 +81,14 @@ const MaterielList: React.FC = () => {
                                 margin-left: ${s.marginLeft}mm;
                                 margin-top: ${s.marginTop}mm;
                                 padding: 1mm;
+                                box-sizing: border-box;
                             }
                             .header-section {
                                 width: 100%;
-                                margin-bottom: 2mm;
+                                margin-bottom: 1.5mm;
                                 text-align: left;
+                                border-bottom: 0.1mm solid #eee;
+                                padding-bottom: 0.5mm;
                             }
                             .name {
                                 font-size: ${s.fontSize}pt;
@@ -97,39 +101,41 @@ const MaterielList: React.FC = () => {
                             .subtitle {
                                 font-size: ${s.fontSize - 3}pt;
                                 color: #444;
-                                margin-top: 0.5mm;
+                                margin-top: 0.2mm;
                             }
                             .bottom-row {
                                 flex: 1;
                                 display: flex;
-                                align-items: flex-end;
+                                items-align: flex-end;
                                 justify-content: space-between;
                                 width: 100%;
+                                overflow: hidden;
                             }
-                            .barcode-col {
+                            .col-left {
                                 display: flex;
                                 flex-direction: column;
                                 align-items: flex-start;
+                                justify-content: flex-end;
                             }
-                            .barcode-img {
-                                height: ${s.height * 0.52}mm;
-                                width: auto;
-                                margin-bottom: 0.2mm;
+                            .qr-code svg {
+                                width: ${s.height * 0.55}mm !important;
+                                height: ${s.height * 0.55}mm !important;
+                                margin-bottom: 0.5mm;
                             }
                             .inv-num {
                                 font-size: ${s.fontSize - 1}pt;
                                 font-weight: bold;
                                 font-family: monospace;
                             }
-                            .logo-col {
-                                width: ${s.logoWidth}mm;
+                            .col-right {
                                 display: flex;
                                 justify-content: flex-end;
                                 align-items: flex-end;
+                                width: ${s.logoWidth}mm;
                             }
                             .logo-img {
                                 width: 100%;
-                                max-height: ${s.height * 0.5}mm;
+                                max-height: ${s.height * 0.55}mm;
                                 object-fit: contain;
                             }
                         </style>
@@ -138,18 +144,25 @@ const MaterielList: React.FC = () => {
                       <div class="label-container">
                         <div class="header-section">
                             <div class="name">${materiel.nom}</div>
-                            <div class="subtitle">ZEBRA ZT411 : ETATS-UNIS</div>
+                            <div class="subtitle">ETIQUETTE D'INVENTAIRE QR</div>
                         </div>
                         <div class="bottom-row">
-                            <div class="barcode-col">
-                                <img src="${url}" class="barcode-img" onload="window.print();" />
+                            <div class="col-left">
+                                <div class="qr-code">
+                                    ${qrContainer.innerHTML}
+                                </div>
                                 <div class="inv-num">${materiel.numero_inventaire}</div>
                             </div>
-                            <div class="logo-col">
+                            <div class="col-right">
                                 <img src="${window.location.origin}/logo.png" class="logo-img" />
                             </div>
                         </div>
                       </div>
+                      <script>
+                        window.onload = function() {
+                           window.print();
+                        }
+                      </script>
                     </body>
                 </html>
             `);
@@ -158,11 +171,20 @@ const MaterielList: React.FC = () => {
         setTimeout(() => {
             iframe.contentWindow?.focus();
             iframe.contentWindow?.print();
-        }, 800);
+        }, 500);
     };
 
     return (
         <div>
+            {/* Hidden QR Generator */}
+            <div style={{ display: 'none' }}>
+                {materiels.map((m: any) => (
+                    <div key={m.id} id={`qr-${m.numero_inventaire}`} ref={qrContainerRef}>
+                        <QRCodeSVG value={m.numero_inventaire} size={128} />
+                    </div>
+                ))}
+            </div>
+
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">Gestion des Matériels</h1>
                 {role === 'admin' && (
@@ -216,7 +238,7 @@ const MaterielList: React.FC = () => {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <button onClick={() => handlePrint(m)} className="text-blue-600 hover:text-blue-900 flex items-center">
-                                        <Printer className="w-4 h-4 mr-1" /> Barcode
+                                        <Printer className="w-4 h-4 mr-1" /> Etiquette QR
                                     </button>
                                 </td>
                             </tr>

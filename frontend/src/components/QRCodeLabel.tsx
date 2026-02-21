@@ -44,11 +44,10 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
     const doc = iframe.contentWindow?.document || iframe.contentDocument;
     if (!doc) return;
 
-    doc.open();
     doc.write(`
         <html>
           <head>
-            <title>Etiquette ${materiel.numero_inventaire}</title>
+            <title>Etiquette QR ${materiel.numero_inventaire}</title>
             <style>
               @page { 
                 size: ${s.width}mm ${s.height}mm; 
@@ -72,13 +71,16 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                 break-inside: avoid;
                 margin-left: ${s.marginLeft}mm;
                 margin-top: ${s.marginTop}mm;
+                box-sizing: border-box;
               }
               .header {
                 width: 100%;
-                margin-bottom: 1mm;
+                margin-bottom: 1.5mm;
+                border-bottom: 0.1mm solid #eee;
+                padding-bottom: 0.5mm;
               }
-              .title { font-size: ${s.fontSize + 2}px; font-weight: bold; margin-bottom: 1px; display: block; text-transform: uppercase; }
-              .subtitle { font-size: ${s.fontSize - 2}px; color: #444; display: block; }
+              .title { font-size: ${s.fontSize}pt; font-weight: bold; margin-bottom: 1px; display: block; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+              .subtitle { font-size: ${s.fontSize - 3}pt; color: #444; display: block; }
               
               .content-row {
                 width: 100%;
@@ -86,27 +88,31 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                 flex: 1;
                 align-items: flex-end;
                 justify-content: space-between;
+                overflow: hidden;
               }
               .qr-col {
                 display: flex;
                 flex-direction: column;
                 align-items: flex-start;
+                justify-content: flex-end;
               }
               .qr-code svg { 
-                width: ${s.height * 0.45}mm !important; 
-                height: ${s.height * 0.45}mm !important; 
+                width: ${s.height * 0.55}mm !important; 
+                height: ${s.height * 0.55}mm !important; 
                 margin-bottom: 0.5mm;
               }
-              .id { font-size: ${s.fontSize - 1}px; font-weight: bold; font-family: monospace; }
+              .id { font-size: ${s.fontSize - 1}pt; font-weight: bold; font-family: monospace; }
               
               .logo-col {
                 width: ${s.logoWidth}mm;
                 display: flex;
                 justify-content: flex-end;
+                align-items: flex-end;
               }
-              .logo-placeholder {
+              .logo-img {
                 width: 100%;
-                max-height: ${s.height * 0.45}mm;
+                max-height: ${s.height * 0.55}mm;
+                object-fit: contain;
               }
 
               @media print {
@@ -118,8 +124,8 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
           <body>
             <div class="label-container">
               <div class="header">
-                <span class="title">${materiel.nom.substring(0, 50)}</span>
-                <span class="subtitle">CODE QR D'INVENTAIRE</span>
+                <span class="title">${materiel.nom}</span>
+                <span class="subtitle">ETIQUETTE D'INVENTAIRE QR</span>
               </div>
               <div class="content-row">
                 <div class="qr-col">
@@ -129,7 +135,7 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                   <span class="id">${materiel.numero_inventaire}</span>
                 </div>
                 <div class="logo-col">
-                   <img src="${window.location.origin}/logo.png" style="width: 100%; object-fit: contain;" />
+                   <img src="${window.location.origin}/logo.png" class="logo-img" />
                 </div>
               </div>
             </div>

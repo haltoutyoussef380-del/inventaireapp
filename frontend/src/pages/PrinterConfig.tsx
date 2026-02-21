@@ -226,10 +226,14 @@ const PrinterConfig: React.FC = () => {
                             </div>
                             <div className="flex-1 flex items-end justify-between w-full">
                                 <div className="flex flex-col items-start">
-                                    <div className="w-[30mm] h-[10mm] bg-black bg-opacity-5 flex items-center justify-center mb-1">
-                                        <span className="text-[5pt] text-gray-400">BARCODE</span>
+                                    <div className="w-[15mm] h-[15mm] bg-black bg-opacity-5 flex items-center justify-center mb-1 border border-dashed border-gray-300">
+                                        <div className="grid grid-cols-3 gap-0.5 p-1 w-full h-full opacity-20">
+                                            <div className="bg-black"></div><div className="bg-black"></div><div className="bg-black"></div>
+                                            <div className="bg-black"></div><div className="border border-black"></div><div className="bg-black"></div>
+                                            <div className="bg-black"></div><div className="bg-black"></div><div className="bg-black"></div>
+                                        </div>
                                     </div>
-                                    <span className="text-[7pt] font-mono font-bold">INV-2026-0001</span>
+                                    <span style={{ fontSize: `${settings.fontSize - 2}pt` }} className="font-mono font-bold leading-none">INV-2026-0001</span>
                                 </div>
                                 <div style={{ width: `${settings.logoWidth}mm` }} className="flex justify-end items-end">
                                     <div className="w-full aspect-square bg-gray-100 rounded flex items-center justify-center">
