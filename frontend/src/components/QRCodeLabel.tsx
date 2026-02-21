@@ -131,14 +131,14 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                 <span class="subtitle">${materiel.marque || 'SANS MARQUE'}</span>
               </div>
                <div class="content-row">
-                <div class="logo-col">
-                   <img src="${window.location.origin}/logo.png" class="logo-img" />
-                </div>
                 <div class="qr-col">
                   <div class="qr-code">
                     ${printContent.querySelector('.qr-code')?.innerHTML || ''}
                   </div>
                   <span class="id">${materiel.numero_inventaire}</span>
+                </div>
+                <div class="logo-col">
+                   <img src="${window.location.origin}/logo.png" class="logo-img" />
                 </div>
               </div>
             </div>
