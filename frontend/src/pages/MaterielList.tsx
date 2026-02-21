@@ -8,6 +8,7 @@ import { QRCodeSVG } from 'qrcode.react';
 const MaterielList: React.FC = () => {
     const [materiels, setMateriels] = useState([]);
     const [showForm, setShowForm] = useState(false);
+    const [logoBase64, setLogoBase64] = useState<string>('');
     const { role } = useAuth();
     const qrContainerRef = useRef<HTMLDivElement>(null);
 
@@ -20,8 +21,25 @@ const MaterielList: React.FC = () => {
         }
     };
 
+    const fetchLogo = async () => {
+        try {
+            const path = window.location.pathname.endsWith('/') ? window.location.pathname : window.location.pathname + '/';
+            const response = await fetch(`${path}logo.png`);
+            if (!response.ok) throw new Error("Logo not found");
+            const blob = await response.blob();
+            const reader = new FileReader();
+            reader.onloadend = () => setLogoBase64(reader.result as string);
+            reader.readAsDataURL(blob);
+        } catch (e) {
+            console.error("Logo fetch error", e);
+            // Fallback: stay with empty or use origin
+            setLogoBase64(`${window.location.origin}/logo.png`);
+        }
+    };
+
     useEffect(() => {
         loadData();
+        fetchLogo();
     }, []);
 
     const handlePrint = (materiel: any) => {
@@ -65,32 +83,35 @@ const MaterielList: React.FC = () => {
                                 size: ${s.width}mm ${s.height}mm; 
                                 margin: 0 !important; 
                             }
-                            body { 
+                            * {
+                                -webkit-print-color-adjust: exact;
+                                print-color-adjust: exact;
+                            }
+                            html, body { 
                                 margin: 0 !important; 
                                 padding: 0 !important;
                                 width: ${s.width}mm;
                                 height: ${s.height}mm;
-                                font-family: 'Arial', sans-serif;
-                                -webkit-print-color-adjust: exact;
-                                print-color-adjust: exact;
+                                font-family: 'Arial', 'Helvetica', sans-serif;
                                 overflow: hidden;
+                                background-color: white;
                             }
                             .label-container {
                                 display: flex;
                                 flex-direction: column;
-                                width: 100%;
-                                height: 100%;
+                                width: ${s.width}mm;
+                                height: ${s.height}mm;
                                 margin-left: ${s.marginLeft}mm;
                                 margin-top: ${s.marginTop}mm;
-                                padding: 1mm;
+                                padding: 0.5mm 1.5mm !important; /* Minimal lateral padding */
                                 box-sizing: border-box;
                             }
                             .header-section {
                                 width: 100%;
-                                margin-bottom: 1.5mm;
+                                margin-bottom: 0.5mm; /* Reduced space */
                                 text-align: left;
-                                border-bottom: 0.1mm solid #eee;
-                                padding-bottom: 0.5mm;
+                                border-bottom: 0.2mm solid #000; /* Darker line for print */
+                                padding-bottom: 0.3mm;
                             }
                             .name {
                                 font-size: ${s.fontSize}pt;
@@ -124,9 +145,9 @@ const MaterielList: React.FC = () => {
                                 justify-content: center;
                             }
                             .qr-code svg {
-                                width: ${s.height * 0.58}mm !important;
-                                height: ${s.height * 0.58}mm !important;
-                                margin-bottom: 0.5mm;
+                                width: ${s.height * 0.70}mm !important; 
+                                height: ${s.height * 0.70}mm !important; 
+                                margin-bottom: 0.2mm;
                             }
                             .inv-num {
                                 font-size: ${s.fontSize - 1}pt;
@@ -142,8 +163,8 @@ const MaterielList: React.FC = () => {
                                 align-items: center;
                             }
                             .logo-img {
-                                max-width: 95%; 
-                                max-height: ${s.height * 0.58 + 3}mm; /* Match QR height + 3mm */
+                                max-width: 98%; 
+                                max-height: ${s.height * 0.75}mm; /* Fill more height */
                                 object-fit: contain;
                             }
                         </style>
@@ -162,7 +183,7 @@ const MaterielList: React.FC = () => {
                                 <div class="inv-num">${materiel.numero_inventaire}</div>
                             </div>
                             <div class="col-right">
-                                <img src="${window.location.pathname}logo.png" class="logo-img" />
+                                <img src="${logoBase64}" class="logo-img" />
                             </div>
                         </div>
                       </div>

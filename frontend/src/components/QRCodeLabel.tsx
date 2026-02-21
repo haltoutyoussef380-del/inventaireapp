@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Printer } from 'lucide-react';
 
@@ -15,6 +15,26 @@ interface QRCodeLabelProps {
 
 const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
   const printRef = useRef<HTMLDivElement>(null);
+  const [logoBase64, setLogoBase64] = useState<string>('');
+
+  const fetchLogo = async () => {
+    try {
+      const path = window.location.pathname.endsWith('/') ? window.location.pathname : window.location.pathname + '/';
+      const response = await fetch(`${path}logo.png`);
+      if (!response.ok) throw new Error("Logo not found");
+      const blob = await response.blob();
+      const reader = new FileReader();
+      reader.onloadend = () => setLogoBase64(reader.result as string);
+      reader.readAsDataURL(blob);
+    } catch (e) {
+      console.error("Logo fetch error", e);
+      setLogoBase64(`${window.location.origin}/logo.png`);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogo();
+  }, []);
 
   const handlePrint = () => {
     const printContent = printRef.current;
@@ -52,45 +72,53 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
             <style>
               @page { 
                 size: ${s.width}mm ${s.height}mm; 
-                margin: 0; 
+                margin: 0 !important; 
               }
-              body { 
-                font-family: sans-serif; 
-                margin: 0; 
-                padding: 0;
+              * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+              html, body { 
+                margin: 0 !important; 
+                padding: 0 !important;
                 width: ${s.width}mm;
                 height: ${s.height}mm;
+                font-family: 'Arial', 'Helvetica', sans-serif;
                 overflow: hidden;
+                background-color: white;
               }
               .label-container { 
-                width: 100%;
-                height: 100%;
-                padding: 1mm; 
                 display: flex; 
                 flex-direction: column; 
-                align-items: flex-start;
-                break-inside: avoid;
+                width: ${s.width}mm;
+                height: ${s.height}mm;
                 margin-left: ${s.marginLeft}mm;
                 margin-top: ${s.marginTop}mm;
+                padding: 0.5mm 1.5mm !important;
                 box-sizing: border-box;
               }
               .header {
                 width: 100%;
-                margin-bottom: 1.5mm;
-                border-bottom: 0.1mm solid #eee;
-                padding-bottom: 0.5mm;
+                margin-bottom: 0.5mm;
+                border-bottom: 0.2mm solid #000;
+                padding-bottom: 0.3mm;
+                display: flex;
+                flex-direction: column;
               }
               .title {
                 font-size: ${s.fontSize}pt;
                 font-weight: bold;
                 text-transform: uppercase;
-                display: block;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
               }
               .subtitle {
-                font-size: ${s.fontSize}pt; /* Same as title */
+                font-size: ${s.fontSize}pt; 
                 color: #444;
-                display: block;
-                margin-top: 0.1mm;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
               }
               .content-row {
                 width: 100%;
@@ -108,9 +136,9 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                 justify-content: center;
               }
               .qr-code svg { 
-                width: ${s.height * 0.58}mm !important; 
-                height: ${s.height * 0.58}mm !important; 
-                margin-bottom: 0.5mm;
+                width: ${s.height * 0.70}mm !important; 
+                height: ${s.height * 0.70}mm !important; 
+                margin-bottom: 0.2mm;
               }
               .id { 
                 font-size: ${s.fontSize - 1}pt; 
@@ -127,8 +155,8 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                 align-items: center;
               }
               .logo-img {
-                max-width: 95%; 
-                max-height: ${s.height * 0.58 + 3}mm; /* Match QR height + 3mm */
+                max-width: 98%; 
+                max-height: ${s.height * 0.75}mm;
                 object-fit: contain;
               }
 
@@ -152,7 +180,7 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                   <span class="id">${materiel.numero_inventaire}</span>
                 </div>
                 <div class="logo-col">
-                   <img src="${window.location.pathname}logo.png" class="logo-img" />
+                   <img src="${logoBase64}" class="logo-img" />
                 </div>
               </div>
             </div>
