@@ -106,9 +106,9 @@ const MaterielList: React.FC = () => {
                             .bottom-row {
                                 flex: 1;
                                 display: flex;
-                                align-items: flex-end;
+                                align-items: center;
                                 justify-content: center;
-                                gap: 2mm;
+                                gap: 1mm;
                                 width: 100%;
                                 overflow: hidden;
                             }
@@ -116,7 +116,7 @@ const MaterielList: React.FC = () => {
                                 display: flex;
                                 flex-direction: column;
                                 align-items: center;
-                                justify-content: flex-end;
+                                justify-content: center;
                             }
                             .qr-code svg {
                                 width: ${s.height * 0.58}mm !important;

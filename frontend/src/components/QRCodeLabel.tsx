@@ -87,16 +87,16 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                 width: 100%;
                 display: flex;
                 flex: 1;
-                align-items: flex-end;
+                align-items: center;
                 justify-content: center;
-                gap: 2mm;
+                gap: 1mm;
                 overflow: hidden;
               }
               .qr-col {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                justify-content: flex-end;
+                justify-content: center;
               }
               .qr-code svg { 
                 width: ${s.height * 0.58}mm !important; 
