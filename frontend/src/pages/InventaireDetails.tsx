@@ -53,7 +53,7 @@ const InventaireDetails: React.FC = () => {
                 .select(`
                     *,
                     materiel:materiels(*),
-                    agent:profiles(full_name)
+                    agent:scanne_par(full_name) 
                 `)
                 .eq('inventaire_id', id);
 
@@ -62,7 +62,8 @@ const InventaireDetails: React.FC = () => {
             // Flatten data for easier use
             const formattedScans = scans.map((line: any) => ({
                 ...line,
-                agent_name: line.agent?.full_name || 'Inconnu'
+                agent_name: line.agent?.full_name || 'Inconnu',
+                created_at: line.date_scan || line.created_at // Compatibility
             }));
             setScannedItems(formattedScans);
 

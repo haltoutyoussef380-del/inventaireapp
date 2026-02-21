@@ -48,7 +48,9 @@ create table public.inventaire_lignes (
 create table public.profiles (
   id uuid references auth.users(id) primary key,
   email text,
-  role text default 'agent' check (role in ('admin', 'agent'))
+  full_name text,
+  role text default 'agent' check (role in ('admin', 'agent')),
+  updated_at timestamptz default now()
 );
 
 -- Données initiales (Catégories)
@@ -61,8 +63,13 @@ insert into public.categories (code, libelle) values
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, email, role)
-  values (new.id, new.email, 'agent');
+  insert into public.profiles (id, email, role, full_name)
+  values (
+    new.id, 
+    new.email, 
+    coalesce(new.raw_user_meta_data->>'role', 'agent'),
+    new.raw_user_meta_data->>'full_name'
+  );
   return new;
 end;
 $$ language plpgsql security definer;
@@ -79,6 +86,11 @@ alter table public.categories enable row level security;
 alter table public.materiels enable row level security;
 alter table public.inventaires enable row level security;
 alter table public.inventaire_lignes enable row level security;
+
+-- FK explicite pour aider PostgREST join
+ALTER TABLE public.inventaire_lignes 
+ADD CONSTRAINT inventaire_lignes_scanne_par_fkey 
+FOREIGN KEY (scanne_par) REFERENCES public.profiles(id);
 
 create policy "Public profiles are viewable by everyone." on profiles for select using (true);
 create policy "Users can insert their own profile." on profiles for insert with check (auth.uid() = id);
