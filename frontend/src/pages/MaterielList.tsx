@@ -77,7 +77,7 @@ const MaterielList: React.FC = () => {
         doc.write(`
                 <html>
                     <head>
-                        <title>Etiquette QR ${materiel.numero_inventaire}</title>
+                        <title>Etiquette</title>
                         <style>
                             @page { 
                                 size: ${s.width}mm ${s.height}mm; 
@@ -101,10 +101,10 @@ const MaterielList: React.FC = () => {
                                 flex-direction: column;
                                 width: ${s.width}mm;
                                 height: ${s.height}mm;
-                                margin-left: ${s.marginLeft}mm;
-                                margin-top: ${s.marginTop}mm;
-                                padding: 0.5mm 1.5mm !important; /* Minimal lateral padding */
+                                margin: 0 !important;
+                                padding: 1mm 2mm !important;
                                 box-sizing: border-box;
+                                justify-content: space-between; /* Fill height */
                             }
                             .header-section {
                                 width: 100%;
@@ -145,16 +145,15 @@ const MaterielList: React.FC = () => {
                                 justify-content: center;
                             }
                             .qr-code svg {
-                                width: ${s.height * 0.70}mm !important; 
-                                height: ${s.height * 0.70}mm !important; 
-                                margin-bottom: 0.2mm;
+                                width: ${s.height * 0.72}mm !important; 
+                                height: ${s.height * 0.72}mm !important; 
+                                margin-bottom: 0.1mm;
                             }
                             .inv-num {
-                                font-size: ${s.fontSize - 1}pt;
+                                font-size: ${s.fontSize}pt; /* A bit larger */
                                 font-weight: bold;
                                 font-family: 'Courier New', monospace;
                                 white-space: nowrap;
-                                margin-top: 0.5mm;
                             }
                             .col-right {
                                 width: 50%;
@@ -164,7 +163,7 @@ const MaterielList: React.FC = () => {
                             }
                             .logo-img {
                                 max-width: 98%; 
-                                max-height: ${s.height * 0.75}mm; /* Fill more height */
+                                max-height: ${s.height * 0.78}mm;
                                 object-fit: contain;
                             }
                         </style>

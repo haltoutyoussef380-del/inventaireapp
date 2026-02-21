@@ -68,7 +68,7 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
     doc.write(`
         <html>
           <head>
-            <title>Etiquette QR ${materiel.numero_inventaire}</title>
+            <title>Etiquette</title>
             <style>
               @page { 
                 size: ${s.width}mm ${s.height}mm; 
@@ -92,10 +92,10 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                 flex-direction: column; 
                 width: ${s.width}mm;
                 height: ${s.height}mm;
-                margin-left: ${s.marginLeft}mm;
-                margin-top: ${s.marginTop}mm;
-                padding: 0.5mm 1.5mm !important;
+                margin: 0 !important;
+                padding: 1mm 2mm !important;
                 box-sizing: border-box;
+                justify-content: space-between; /* Fill height */
               }
               .header {
                 width: 100%;
@@ -136,16 +136,15 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                 justify-content: center;
               }
               .qr-code svg { 
-                width: ${s.height * 0.70}mm !important; 
-                height: ${s.height * 0.70}mm !important; 
-                margin-bottom: 0.2mm;
+                width: ${s.height * 0.72}mm !important; 
+                height: ${s.height * 0.72}mm !important; 
+                margin-bottom: 0.1mm;
               }
               .id { 
-                font-size: ${s.fontSize - 1}pt; 
+                font-size: ${s.fontSize}pt; 
                 font-weight: bold; 
                 font-family: 'Courier New', monospace; 
                 white-space: nowrap;
-                margin-top: 0.5mm;
               }
               
               .logo-col {
@@ -156,7 +155,7 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
               }
               .logo-img {
                 max-width: 98%; 
-                max-height: ${s.height * 0.75}mm;
+                max-height: ${s.height * 0.78}mm;
                 object-fit: contain;
               }
 
