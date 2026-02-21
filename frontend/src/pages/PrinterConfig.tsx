@@ -224,7 +224,7 @@ const PrinterConfig: React.FC = () => {
                                 <span style={{ fontSize: `${settings.fontSize}pt` }} className="font-bold truncate uppercase block">NOM DU MATÉRIEL</span>
                                 <span className="text-[6pt] text-gray-500 block">DESCRIPTION OU CATÉGORIE</span>
                             </div>
-                            <div className="flex-1 flex items-end justify-center gap-4 w-full">
+                            <div className="flex-1 flex items-end justify-center gap-2 w-full">
                                 <div className="flex flex-col items-center">
                                     <div className="w-[15mm] h-[15mm] bg-black bg-opacity-5 flex items-center justify-center mb-1 border border-dashed border-gray-300">
                                         <div className="grid grid-cols-3 gap-0.5 p-1 w-full h-full opacity-20">
@@ -235,8 +235,8 @@ const PrinterConfig: React.FC = () => {
                                     </div>
                                     <span style={{ fontSize: `${settings.fontSize - 2}pt` }} className="font-mono font-bold leading-none">INV-2026-0001</span>
                                 </div>
-                                <div style={{ width: `${settings.logoWidth}mm` }} className="flex justify-center items-end">
-                                    <div className="w-full h-[15mm] bg-gray-100 rounded flex items-center justify-center">
+                                <div style={{ width: `${settings.logoWidth}mm` }} className="flex justify-center items-center h-[15mm]">
+                                    <div className="w-full h-full bg-gray-100 rounded flex items-center justify-center">
                                         <span className="text-[6pt] text-gray-400">LOGO</span>
                                     </div>
                                 </div>

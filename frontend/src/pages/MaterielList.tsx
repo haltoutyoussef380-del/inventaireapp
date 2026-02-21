@@ -108,7 +108,7 @@ const MaterielList: React.FC = () => {
                                 display: flex;
                                 align-items: flex-end;
                                 justify-content: center;
-                                gap: 4mm;
+                                gap: 2mm;
                                 width: 100%;
                                 overflow: hidden;
                             }
@@ -131,12 +131,13 @@ const MaterielList: React.FC = () => {
                             .col-right {
                                 display: flex;
                                 justify-content: center;
-                                align-items: flex-end;
+                                align-items: center;
                                 width: ${s.logoWidth}mm;
+                                height: ${s.height * 0.65}mm;
                             }
                             .logo-img {
                                 width: 100%;
-                                max-height: ${s.height * 0.65}mm;
+                                max-height: 100%;
                                 object-fit: contain;
                             }
                         </style>
@@ -145,7 +146,7 @@ const MaterielList: React.FC = () => {
                       <div class="label-container">
                         <div class="header-section">
                             <div class="name">${materiel.nom}</div>
-                            <div class="subtitle">ETIQUETTE D'INVENTAIRE QR</div>
+                            <div class="subtitle">${materiel.marque || 'SANS MARQUE'}</div>
                         </div>
                         <div class="bottom-row">
                             <div class="col-left">

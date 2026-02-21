@@ -7,6 +7,7 @@ interface QRCodeLabelProps {
     id: number;
     nom: string;
     numero_inventaire: string;
+    marque?: string;
     service_perimetre?: string;
     categorie?: string;
   };
@@ -88,7 +89,7 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                 flex: 1;
                 align-items: flex-end;
                 justify-content: center;
-                gap: 4mm;
+                gap: 2mm;
                 overflow: hidden;
               }
               .qr-col {
@@ -108,11 +109,12 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                 width: ${s.logoWidth}mm;
                 display: flex;
                 justify-content: center;
-                align-items: flex-end;
+                align-items: center;
+                height: ${s.height * 0.65}mm;
               }
               .logo-img {
                 width: 100%;
-                max-height: ${s.height * 0.65}mm;
+                max-height: 100%;
                 object-fit: contain;
               }
 
@@ -126,7 +128,7 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
             <div class="label-container">
               <div class="header">
                 <span class="title">${materiel.nom}</span>
-                <span class="subtitle">ETIQUETTE D'INVENTAIRE QR</span>
+                <span class="subtitle">${materiel.marque || 'SANS MARQUE'}</span>
               </div>
               <div class="content-row">
                 <div class="qr-col">
