@@ -106,20 +106,21 @@ const MaterielList: React.FC = () => {
                             .bottom-row {
                                 flex: 1;
                                 display: flex;
-                                items-align: flex-end;
-                                justify-content: space-between;
+                                align-items: flex-end;
+                                justify-content: center;
+                                gap: 4mm;
                                 width: 100%;
                                 overflow: hidden;
                             }
                             .col-left {
                                 display: flex;
                                 flex-direction: column;
-                                align-items: flex-start;
+                                align-items: center;
                                 justify-content: flex-end;
                             }
                             .qr-code svg {
-                                width: ${s.height * 0.55}mm !important;
-                                height: ${s.height * 0.55}mm !important;
+                                width: ${s.height * 0.58}mm !important;
+                                height: ${s.height * 0.58}mm !important;
                                 margin-bottom: 0.5mm;
                             }
                             .inv-num {
@@ -129,13 +130,13 @@ const MaterielList: React.FC = () => {
                             }
                             .col-right {
                                 display: flex;
-                                justify-content: flex-end;
+                                justify-content: center;
                                 align-items: flex-end;
                                 width: ${s.logoWidth}mm;
                             }
                             .logo-img {
                                 width: 100%;
-                                max-height: ${s.height * 0.55}mm;
+                                max-height: ${s.height * 0.65}mm;
                                 object-fit: contain;
                             }
                         </style>

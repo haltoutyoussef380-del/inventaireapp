@@ -87,18 +87,19 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                 display: flex;
                 flex: 1;
                 align-items: flex-end;
-                justify-content: space-between;
+                justify-content: center;
+                gap: 4mm;
                 overflow: hidden;
               }
               .qr-col {
                 display: flex;
                 flex-direction: column;
-                align-items: flex-start;
+                align-items: center;
                 justify-content: flex-end;
               }
               .qr-code svg { 
-                width: ${s.height * 0.55}mm !important; 
-                height: ${s.height * 0.55}mm !important; 
+                width: ${s.height * 0.58}mm !important; 
+                height: ${s.height * 0.58}mm !important; 
                 margin-bottom: 0.5mm;
               }
               .id { font-size: ${s.fontSize - 1}pt; font-weight: bold; font-family: monospace; }
@@ -106,12 +107,12 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
               .logo-col {
                 width: ${s.logoWidth}mm;
                 display: flex;
-                justify-content: flex-end;
+                justify-content: center;
                 align-items: flex-end;
               }
               .logo-img {
                 width: 100%;
-                max-height: ${s.height * 0.55}mm;
+                max-height: ${s.height * 0.65}mm;
                 object-fit: contain;
               }
 
