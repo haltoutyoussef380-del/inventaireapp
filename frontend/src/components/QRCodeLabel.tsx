@@ -112,7 +112,13 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                 height: ${s.height * 0.58}mm !important; 
                 margin-bottom: 0.5mm;
               }
-              .id { font-size: ${s.fontSize - 1}pt; font-weight: bold; font-family: monospace; }
+              .id { 
+                font-size: ${s.fontSize - 1}pt; 
+                font-weight: bold; 
+                font-family: 'Courier New', monospace; 
+                white-space: nowrap;
+                margin-top: 0.5mm;
+              }
               
               .logo-col {
                 width: 50%;
@@ -146,7 +152,7 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
                   <span class="id">${materiel.numero_inventaire}</span>
                 </div>
                 <div class="logo-col">
-                   <img src="${window.location.origin}/logo.png" class="logo-img" />
+                   <img src="${window.location.pathname}logo.png" class="logo-img" />
                 </div>
               </div>
             </div>

@@ -63,14 +63,16 @@ const MaterielList: React.FC = () => {
                         <style>
                             @page { 
                                 size: ${s.width}mm ${s.height}mm; 
-                                margin: 0; 
+                                margin: 0 !important; 
                             }
                             body { 
-                                margin: 0; 
-                                padding: 0;
+                                margin: 0 !important; 
+                                padding: 0 !important;
                                 width: ${s.width}mm;
                                 height: ${s.height}mm;
                                 font-family: 'Arial', sans-serif;
+                                -webkit-print-color-adjust: exact;
+                                print-color-adjust: exact;
                                 overflow: hidden;
                             }
                             .label-container {
@@ -129,7 +131,9 @@ const MaterielList: React.FC = () => {
                             .inv-num {
                                 font-size: ${s.fontSize - 1}pt;
                                 font-weight: bold;
-                                font-family: monospace;
+                                font-family: 'Courier New', monospace;
+                                white-space: nowrap;
+                                margin-top: 0.5mm;
                             }
                             .col-right {
                                 width: 50%;
@@ -158,7 +162,7 @@ const MaterielList: React.FC = () => {
                                 <div class="inv-num">${materiel.numero_inventaire}</div>
                             </div>
                             <div class="col-right">
-                                <img src="${window.location.origin}/logo.png" class="logo-img" />
+                                <img src="${window.location.pathname}logo.png" class="logo-img" />
                             </div>
                         </div>
                       </div>
