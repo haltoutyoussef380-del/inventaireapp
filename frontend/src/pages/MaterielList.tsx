@@ -149,14 +149,14 @@ const MaterielList: React.FC = () => {
                             <div class="subtitle">${materiel.marque || 'SANS MARQUE'}</div>
                         </div>
                         <div class="bottom-row">
+                            <div class="col-right">
+                                <img src="${window.location.origin}/logo.png" class="logo-img" />
+                            </div>
                             <div class="col-left">
                                 <div class="qr-code">
                                     ${qrContainer.innerHTML}
                                 </div>
                                 <div class="inv-num">${materiel.numero_inventaire}</div>
-                            </div>
-                            <div class="col-right">
-                                <img src="${window.location.origin}/logo.png" class="logo-img" />
                             </div>
                         </div>
                       </div>
