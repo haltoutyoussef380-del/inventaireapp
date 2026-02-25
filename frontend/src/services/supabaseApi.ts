@@ -113,12 +113,17 @@ export const inventaireService = {
 
     confirmScan: async (scanData: { inventaire_id: number, materiel_id: number, user_id: string }) => {
         // Check if already scanned in this inventory
-        const { data: existing } = await supabase
+        const { data: existing, error: checkError } = await supabase
             .from('inventaire_lignes')
             .select('id')
             .eq('inventaire_id', scanData.inventaire_id)
             .eq('materiel_id', scanData.materiel_id)
             .maybeSingle(); // Better: doesn't throw 406 if not found
+
+        if (checkError) {
+            console.error("Erreur vérification scan existant:", checkError);
+            throw new Error('Erreur réseau ou base de données lors de la vérification');
+        }
 
         if (existing) {
             throw new Error('Déjà scanné dans cette campagne');
@@ -157,6 +162,17 @@ export const inventaireService = {
 
         if (error) throw error;
         return { scannedCount: count || 0 };
+    },
+
+    getScannedItems: async (inventaireId: number) => {
+        const { data, error } = await supabase
+            .from('inventaire_lignes')
+            .select('*, materiel:materiels(*)')
+            .eq('inventaire_id', inventaireId)
+            .order('date_scan', { ascending: false });
+
+        if (error) throw error;
+        return data || [];
     }
 };
 

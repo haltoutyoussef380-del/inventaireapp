@@ -29,10 +29,11 @@ const InventairePage: React.FC = () => {
         loadCampaigns();
     }, []);
 
-    // Chargement des stats quand on rejoint un inventaire
+    // Chargement des stats et scans quand on rejoint un inventaire
     useEffect(() => {
         if (inventaireId && user) {
             loadStats();
+            loadScannedItems();
         }
     }, [inventaireId, user]);
 
@@ -52,6 +53,18 @@ const InventairePage: React.FC = () => {
             setMyStats(stats.scannedCount);
         } catch (error) {
             console.error("Erreur stats", error);
+        }
+    };
+
+    const loadScannedItems = async () => {
+        if (!inventaireId) return;
+        try {
+            const data = await inventaireService.getScannedItems(inventaireId);
+            // On extrait les objets matériels pour la liste d'affichage
+            const items = data.map((d: any) => d.materiel).filter((m: any) => m !== null);
+            setScannedItems(items);
+        } catch (error) {
+            console.error("Erreur chargement scans", error);
         }
     };
 
