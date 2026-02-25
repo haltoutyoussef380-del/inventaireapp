@@ -29,10 +29,11 @@ const InventairePage: React.FC = () => {
         loadCampaigns();
     }, []);
 
-    // Chargement des stats quand on rejoint un inventaire
+    // Chargement des stats et scans quand on rejoint un inventaire
     useEffect(() => {
         if (inventaireId && user) {
             loadStats();
+            loadScannedItems();
         }
     }, [inventaireId, user]);
 
@@ -52,6 +53,18 @@ const InventairePage: React.FC = () => {
             setMyStats(stats.scannedCount);
         } catch (error) {
             console.error("Erreur stats", error);
+        }
+    };
+
+    const loadScannedItems = async () => {
+        if (!inventaireId) return;
+        try {
+            const data = await inventaireService.getScannedItems(inventaireId);
+            // On extrait les objets matériels pour la liste d'affichage
+            const items = data.map((d: any) => d.materiel).filter((m: any) => m !== null);
+            setScannedItems(items);
+        } catch (error) {
+            console.error("Erreur chargement scans", error);
         }
     };
 
@@ -274,11 +287,18 @@ const InventairePage: React.FC = () => {
 
                     <div className="bg-white p-4 rounded-xl shadow-md border-t-4 border-blue-500">
                         <h2 className="text-lg font-bold mb-4 text-center text-gray-700">Scanner le code-barres</h2>
-                        {/* Masquer le scanner si modale ouverte pour éviter conflit caméra/perf */}
-                        <div className={pendingMateriel ? "invisible h-0 overflow-hidden" : ""}>
+                        {/* Unmount scanner while modal is open to prevent duplicate/ghost scans */}
+                        {!pendingMateriel ? (
                             <BarcodeScanner onScanSuccess={handleScan} />
-                        </div>
-                        {pendingMateriel && <div className="h-64 flex items-center justify-center bg-gray-100 rounded text-gray-400">Scan en pause...</div>}
+                        ) : (
+                            <div className="h-64 flex items-center justify-center bg-gray-100 rounded-lg bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400">
+                                <div className="animate-pulse bg-blue-100 p-3 rounded-full mb-2">
+                                    <CheckCircle className="w-8 h-8 text-blue-500" />
+                                </div>
+                                <p className="font-medium">Scan en pause...</p>
+                                <p className="text-xs">Validation en cours</p>
+                            </div>
+                        )}
 
                         {lastScan && !pendingMateriel && (
                             <div className={`mt-4 p-4 rounded-lg text-center font-bold flex items-center justify-center ${lastScan.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
