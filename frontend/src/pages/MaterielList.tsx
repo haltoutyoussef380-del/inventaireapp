@@ -98,7 +98,7 @@ const MaterielList: React.FC = () => {
                             .subtitle { font-size: ${s.fontSize}pt; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
                             .bottom-row { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; overflow: hidden; }
                             .col-left { width: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-                            .qr-code svg { width: ${s.height * 0.72}mm !important; height: ${s.height * 0.72}mm !important; }
+                            .qr-code svg { width: ${s.qrSize || (s.height * 0.72)}mm !important; height: ${s.qrSize || (s.height * 0.72)}mm !important; }
                             .inv-num { font-size: ${s.fontSize}pt; font-weight: bold; font-family: 'Courier New', monospace; }
                             .col-right { width: 50%; display: flex; justify-content: center; align-items: center; }
                             .logo-img { max-width: 98%; max-height: ${s.height * 0.78}mm; object-fit: contain; }
@@ -214,8 +214,8 @@ const MaterielList: React.FC = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{m.service || '-'}</td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`px-3 py-1 text-[10px] font-black uppercase rounded-full shadow-sm ${m.statut === 'En service' ? 'bg-green-50 text-green-700' :
-                                                m.statut === 'En maintenance' ? 'bg-orange-50 text-orange-700' :
-                                                    'bg-red-50 text-red-700'
+                                            m.statut === 'En maintenance' ? 'bg-orange-50 text-orange-700' :
+                                                'bg-red-50 text-red-700'
                                             }`}>
                                             {m.statut}
                                         </span>

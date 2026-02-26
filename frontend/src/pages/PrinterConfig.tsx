@@ -8,6 +8,7 @@ interface PrinterSettings {
     marginTop: number;
     fontSize: number;
     logoWidth: number;
+    qrSize: number;
 }
 
 const DEFAULT_SETTINGS: PrinterSettings = {
@@ -16,13 +17,14 @@ const DEFAULT_SETTINGS: PrinterSettings = {
     marginLeft: 0,
     marginTop: 0,
     fontSize: 9,
-    logoWidth: 22
+    logoWidth: 22,
+    qrSize: 18
 };
 
 const PRESETS = [
-    { label: "Standard (114x25mm)", width: 114, height: 25, fontSize: 10, logoWidth: 35 },
-    { label: "Petit (50x25mm)", width: 50, height: 25, fontSize: 8, logoWidth: 22 },
-    { label: "Moyen (70x30mm)", width: 70, height: 30, fontSize: 9, logoWidth: 28 },
+    { label: "Standard (114x25mm)", width: 114, height: 25, fontSize: 10, logoWidth: 35, qrSize: 20 },
+    { label: "Petit (50x25mm)", width: 50, height: 25, fontSize: 8, logoWidth: 22, qrSize: 18 },
+    { label: "Moyen (70x30mm)", width: 70, height: 30, fontSize: 9, logoWidth: 28, qrSize: 22 },
 ];
 
 const PrinterConfig: React.FC = () => {
@@ -33,7 +35,10 @@ const PrinterConfig: React.FC = () => {
         const stored = localStorage.getItem('zebra_printer_settings');
         if (stored) {
             try {
-                setSettings(JSON.parse(stored));
+                const parsed = JSON.parse(stored);
+                // Migrer vers la nouvelle version si qrSize manque
+                if (!parsed.qrSize) parsed.qrSize = 18;
+                setSettings(parsed);
             } catch (e) {
                 console.error("Failed to parse printer settings", e);
             }
@@ -46,7 +51,8 @@ const PrinterConfig: React.FC = () => {
             width: preset.width,
             height: preset.height,
             fontSize: preset.fontSize,
-            logoWidth: preset.logoWidth
+            logoWidth: preset.logoWidth,
+            qrSize: preset.qrSize || 18
         }));
         setSaved(false);
     };
@@ -74,33 +80,33 @@ const PrinterConfig: React.FC = () => {
     };
 
     return (
-        <div className="max-w-4xl mx-auto p-6">
+        <div className="max-w-4xl mx-auto p-6 animate-fade-in">
             <div className="flex items-center gap-3 mb-8">
                 <div className="bg-purple-100 p-3 rounded-xl text-purple-600">
                     <Printer size={32} />
                 </div>
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-800 font-outfit">Configuration Imprimante Zebra</h1>
-                    <p className="text-gray-500">Ajustez les dimensions pour vos rouleaux d'étiquettes</p>
+                    <h1 className="text-3xl font-bold text-gray-800 font-outfit">Configuration Imprimante</h1>
+                    <p className="text-gray-500 font-medium">Ajustez les dimensions pour vos rouleaux d'étiquettes</p>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Form Section */}
-                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-                    <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                        <Settings size={20} className="text-gray-400" />
+                <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-50">
+                    <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 border-l-4 border-purple-500 pl-4">
+                        <Settings size={20} className="text-purple-400" />
                         Paramètres du Support
                     </h2>
 
-                    <div className="mb-6">
-                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Pré-réglages rapides</label>
-                        <div className="flex flex-wrap gap-2">
+                    <div className="mb-8">
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Pré-réglages rapides</label>
+                        <div className="flex flex-wrap gap-2 text-wrap">
                             {PRESETS.map((p, i) => (
                                 <button
                                     key={i}
                                     onClick={() => applyPreset(p)}
-                                    className="px-3 py-1.5 bg-gray-50 hover:bg-purple-50 hover:text-purple-600 text-gray-600 text-xs font-semibold rounded-lg border border-gray-200 transition-colors"
+                                    className="px-4 py-2 bg-gray-50 hover:bg-purple-600 hover:text-white text-gray-600 text-[10px] font-black uppercase tracking-tighter rounded-xl border border-gray-100 transition-all hover:shadow-lg hover:shadow-purple-100"
                                 >
                                     {p.label}
                                 </button>
@@ -109,87 +115,97 @@ const PrinterConfig: React.FC = () => {
                     </div>
 
                     <div className="space-y-6">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Largeur (mm)</label>
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Largeur (mm)</label>
                                 <input
                                     type="number"
                                     name="width"
                                     value={settings.width}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                                    className="w-full px-4 py-3 bg-gray-50/50 border-2 border-gray-100 rounded-2xl focus:border-purple-500 focus:outline-none transition-all font-bold text-gray-700"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Hauteur (mm)</label>
+                            <div className="space-y-2">
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Hauteur (mm)</label>
                                 <input
                                     type="number"
                                     name="height"
                                     value={settings.height}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                                    className="w-full px-4 py-3 bg-gray-50/50 border-2 border-gray-100 rounded-2xl focus:border-purple-500 focus:outline-none transition-all font-bold text-gray-700"
                                 />
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Marge Gauche (mm)</label>
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Marge Gauche (mm)</label>
                                 <input
                                     type="number"
                                     name="marginLeft"
                                     value={settings.marginLeft}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                                    className="w-full px-4 py-3 bg-gray-50/50 border-2 border-gray-100 rounded-2xl focus:border-purple-500 focus:outline-none transition-all font-bold text-gray-700"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Marge Haute (mm)</label>
+                            <div className="space-y-2">
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Marge Haute (mm)</label>
                                 <input
                                     type="number"
                                     name="marginTop"
                                     value={settings.marginTop}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                                    className="w-full px-4 py-3 bg-gray-50/50 border-2 border-gray-100 rounded-2xl focus:border-purple-500 focus:outline-none transition-all font-bold text-gray-700"
                                 />
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Taille Police (pt)</label>
+                        <div className="grid grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Police (pt)</label>
                                 <input
                                     type="number"
                                     name="fontSize"
                                     value={settings.fontSize}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                                    className="w-full px-4 py-3 bg-gray-50/50 border-2 border-gray-100 rounded-2xl focus:border-purple-500 focus:outline-none transition-all font-bold text-gray-700 text-center"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Largeur Logo (mm)</label>
+                            <div className="space-y-2">
+                                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Logo (mm)</label>
                                 <input
                                     type="number"
                                     name="logoWidth"
                                     value={settings.logoWidth}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                                    className="w-full px-4 py-3 bg-gray-50/50 border-2 border-gray-100 rounded-2xl focus:border-purple-500 focus:outline-none transition-all font-bold text-gray-700 text-center"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="block text-[10px] font-black text-purple-600 uppercase tracking-widest ml-1">Taille QR (mm)</label>
+                                <input
+                                    type="number"
+                                    name="qrSize"
+                                    value={settings.qrSize}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 bg-purple-50/50 border-2 border-purple-100 rounded-2xl focus:border-purple-500 focus:outline-none transition-all font-black text-purple-700 text-center"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex gap-4 pt-4">
+                        <div className="flex gap-4 pt-6">
                             <button
                                 onClick={handleSave}
-                                className={`flex-1 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${saved ? 'bg-green-500 text-white' : 'bg-purple-600 text-white hover:bg-purple-700'
-                                    } shadow-lg shadow-purple-200`}
+                                className={`flex-1 py-4 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-2 transition-all transform active:scale-95 shadow-xl ${saved ? 'bg-green-500 text-white shadow-green-100' : 'bg-purple-600 text-white hover:bg-purple-700 shadow-purple-100'
+                                    }`}
                             >
                                 <Save size={20} />
-                                {saved ? 'Enregistré !' : 'Enregistrer'}
+                                {saved ? 'Enregistré !' : 'Sauvegarder'}
                             </button>
                             <button
                                 onClick={handleReset}
-                                className="px-6 py-3 bg-white border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition-all font-medium flex items-center gap-2"
+                                className="px-6 py-4 bg-white border-2 border-gray-100 text-gray-400 rounded-2xl hover:bg-gray-50 transition-all transform active:scale-95 flex items-center justify-center"
                                 title="Réinitialiser"
                             >
                                 <RefreshCw size={20} />
@@ -199,52 +215,69 @@ const PrinterConfig: React.FC = () => {
                 </div>
 
                 {/* Preview Section */}
-                <div className="flex flex-col gap-4">
-                    <h3 className="text-gray-500 font-medium px-2 flex items-center gap-2">
+                <div className="flex flex-col gap-6">
+                    <h3 className="text-gray-800 font-bold px-2 flex items-center gap-2 uppercase tracking-widest text-xs">
                         Aperçu visuel (Échelle 1:1)
                     </h3>
-                    <div className="bg-checkered p-10 rounded-2xl flex items-center justify-center min-h-[300px] bg-slate-100/50 border-2 border-dashed border-slate-200">
+                    <div className="bg-checkered p-12 rounded-[40px] flex items-center justify-center min-h-[400px] bg-slate-50 border-4 border-white shadow-inner relative overflow-hidden">
+                        {/* Shadow to simulate height */}
                         <div
                             style={{
                                 width: `${settings.width}mm`,
                                 height: `${settings.height}mm`,
-                                marginLeft: `${settings.marginLeft}mm`,
-                                marginTop: `${settings.marginTop}mm`,
+                                transform: `translate(${settings.marginLeft}mm, ${settings.marginTop}mm)`,
                                 backgroundColor: 'white',
-                                boxShadow: '0 10px 30px -5px rgba(0,0,0,0.1)',
-                                border: '1px solid #ddd',
+                                boxShadow: '0 20px 50px rgba(0,0,0,0.15)',
+                                border: '1px solid #eee',
                                 display: 'flex',
                                 flexDirection: 'column',
-                                padding: '1mm',
-                                overflow: 'hidden'
+                                padding: '1mm 2mm',
+                                boxSizing: 'border-box',
+                                overflow: 'hidden',
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                             }}
                             className="relative"
                         >
-                            <div className="mb-2">
-                                <span style={{ fontSize: `${settings.fontSize}pt` }} className="font-bold truncate uppercase block">NOM DU MATÉRIEL</span>
-                                <span style={{ fontSize: `${settings.fontSize}pt` }} className="text-gray-500 block truncate">HP - MARQUE MATÉRIEL</span>
+                            <div className="mb-2 border-b border-black pb-0.5">
+                                <span style={{ fontSize: `${settings.fontSize}pt` }} className="font-bold truncate uppercase block leading-none">NOM DU MATÉRIEL</span>
+                                <span style={{ fontSize: `${settings.fontSize * 0.8}pt` }} className="text-gray-500 block truncate font-medium">MODÈLE - MARQUE</span>
                             </div>
-                            <div className="flex-1 flex items-center justify-center w-full">
-                                <div className="w-1/2 flex flex-col items-center">
-                                    <div className="w-[12mm] h-[12mm] bg-black bg-opacity-5 flex items-center justify-center mb-1 border border-dashed border-gray-300">
-                                        <div className="grid grid-cols-3 gap-0.5 p-1 w-full h-full opacity-20">
-                                            <div className="bg-black"></div><div className="bg-black"></div><div className="bg-black"></div>
-                                            <div className="bg-black"></div><div className="border border-black"></div><div className="bg-black"></div>
-                                            <div className="bg-black"></div><div className="bg-black"></div><div className="bg-black"></div>
+                            <div className="flex-1 flex items-center justify-between w-full">
+                                <div className="flex flex-col items-center justify-center" style={{ width: '45%' }}>
+                                    <div
+                                        style={{ width: `${settings.qrSize}mm`, height: `${settings.qrSize}mm` }}
+                                        className="bg-black/5 flex items-center justify-center mb-1 border border-dashed border-purple-200 transition-all"
+                                    >
+                                        <div className="grid grid-cols-4 gap-0.5 p-1 w-full h-full opacity-30">
+                                            {[...Array(16)].map((_, i) => (
+                                                <div key={i} className={`bg-black ${Math.random() > 0.5 ? 'opacity-100' : 'opacity-0'}`}></div>
+                                            ))}
                                         </div>
                                     </div>
-                                    <span style={{ fontSize: `${settings.fontSize - 2}pt` }} className="font-mono font-bold leading-none">INV-2026-0001</span>
+                                    <span style={{ fontSize: `${settings.fontSize * 0.7}pt` }} className="font-mono font-black text-gray-400">ID-2026-X</span>
                                 </div>
-                                <div className="w-1/2 flex justify-center items-center">
-                                    <div className="w-full h-[15mm] bg-gray-100 rounded flex items-center justify-center max-w-[95%]">
-                                        <span className="text-[6pt] text-gray-400">LOGO</span>
+                                <div className="flex justify-center items-center" style={{ width: '45%' }}>
+                                    <div
+                                        style={{ width: `${settings.logoWidth}mm`, height: `${settings.height * 0.6}mm` }}
+                                        className="bg-gray-100/50 rounded-xl flex items-center justify-center border-2 border-dashed border-gray-200/50 transition-all"
+                                    >
+                                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-tighter">LOGO</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-xl text-yellow-800 text-sm">
-                        <strong>Note :</strong> L'aperçu ci-dessus est estimé. Lors de l'impression réelle, assurez-vous que les paramètres d'échelle du navigateur sont réglés sur "100%" ou "Par défaut".
+                    <div className="bg-amber-50 border-2 border-amber-100 p-6 rounded-3xl text-amber-800 text-sm shadow-sm">
+                        <div className="flex items-start gap-3">
+                            <div className="bg-amber-100 p-1.5 rounded-lg text-amber-600 mt-0.5">
+                                <Settings size={16} />
+                            </div>
+                            <div>
+                                <strong className="block mb-1 font-bold">Conseil d'impression :</strong>
+                                L'aperçu est une estimation. Si le QR dépasse de l'étiquette, réduisez la "Taille QR".
+                                Assurez-vous que l'échelle d'impression du navigateur est fixée à **100%**.
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
