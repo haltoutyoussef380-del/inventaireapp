@@ -10,6 +10,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScanSuccess }) => {
     const scannerRef = useRef<Html5Qrcode | null>(null);
     const [errorMsg, setErrorMsg] = useState<string>('');
     const mountedRef = useRef(false);
+    const lastScannedRef = useRef<string>(''); // Pour éviter de rescanner le même en boucle
 
     useEffect(() => {
         mountedRef.current = true;
@@ -32,7 +33,18 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScanSuccess }) => {
                     },
                     (decodedText) => {
                         if (mountedRef.current) {
-                            onScanSuccess(decodedText);
+                            // On empêche le multi-scan instantané du même QR
+                            if (decodedText !== lastScannedRef.current) {
+                                lastScannedRef.current = decodedText;
+                                onScanSuccess(decodedText);
+
+                                // Permettre de rescanner le même code après 3 secondes (si jamais on l'a annulé)
+                                setTimeout(() => {
+                                    if (lastScannedRef.current === decodedText) {
+                                        lastScannedRef.current = '';
+                                    }
+                                }, 3000);
+                            }
                         }
                     },
                     () => {

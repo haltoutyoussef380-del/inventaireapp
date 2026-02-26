@@ -102,9 +102,16 @@ const InventaireDetails: React.FC = () => {
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet("Inventaire Complet");
 
+        // Helper for GitHub Pages paths
+        const baseUrl = import.meta.env.BASE_URL || '/';
+        const getFullUrl = (path: string) => {
+            const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+            return `${baseUrl}${cleanPath}`;
+        };
+
         // 1. Add Header Image
         try {
-            const response = await fetch('/header.png');
+            const response = await fetch(getFullUrl('header.png'));
             const buffer = await response.arrayBuffer();
             const imageId = workbook.addImage({
                 buffer: buffer,
@@ -210,15 +217,44 @@ const InventaireDetails: React.FC = () => {
         const { jsPDF } = await import('jspdf');
         await import('jspdf-autotable');
 
+        // Helper to load image as base64
+        const loadImageBase64 = async (url: string) => {
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                return new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result as string);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            } catch (e) {
+                console.warn(`Could not load image ${url}`, e);
+                return null;
+            }
+        };
+
+        const baseUrl = import.meta.env.BASE_URL || '/';
+        const getFullUrl = (path: string) => {
+            // Remove leading slash if base url already has one
+            const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+            return `${baseUrl}${cleanPath}`;
+        };
+
+        const headerBase64 = await loadImageBase64(getFullUrl('header.png'));
+        const footerBase64 = await loadImageBase64(getFullUrl('footer.png'));
+
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
 
         const addFooterLogo = () => {
-            try {
-                doc.addImage('/footer.png', 'PNG', 0, pageHeight - 20, pageWidth, 20);
-            } catch (e) {
-                console.warn("Footer image not found, skipping");
+            if (footerBase64) {
+                try {
+                    doc.addImage(footerBase64, 'PNG', 0, pageHeight - 20, pageWidth, 20);
+                } catch (e) {
+                    console.warn("Error adding footer image to PDF", e);
+                }
             }
         };
 
@@ -236,8 +272,8 @@ const InventaireDetails: React.FC = () => {
         doc.text(`Statistiques: ${scannedItems.length} présents / ${missingItems.length} manquants (Total: ${scannedItems.length + missingItems.length})`, 14, 72);
 
         const tableData = type === 'scanned'
-            ? scannedItems.map(i => [i.materiel.nom, i.materiel.numero_inventaire, i.materiel.service || '-', i.agent_name, new Date(i.created_at).toLocaleDateString()])
-            : missingItems.map(i => [i.nom, i.numero_inventaire, i.service || '-']);
+            ? scannedItems.map((i: any) => [i.materiel?.nom || i.nom, i.materiel?.numero_inventaire || i.numero_inventaire, i.materiel?.service || '-', i.agent_name, new Date(i.created_at).toLocaleDateString()])
+            : missingItems.map((i: any) => [i.nom, i.numero_inventaire, i.service || '-']);
 
         const tableHead = type === 'scanned'
             ? [['Nom', 'N° Inventaire', 'Service', 'Scanné par', 'Date']]
@@ -253,7 +289,13 @@ const InventaireDetails: React.FC = () => {
             margin: { top: 35, bottom: 25 },
             didDrawPage: () => {
                 // Header on every page
-                doc.addImage('/header.png', 'PNG', 0, 0, pageWidth, 30);
+                if (headerBase64) {
+                    try {
+                        doc.addImage(headerBase64, 'PNG', 0, 0, pageWidth, 30);
+                    } catch (e) {
+                        console.warn("Error adding header image to PDF page", e);
+                    }
+                }
             }
         });
 
@@ -263,7 +305,13 @@ const InventaireDetails: React.FC = () => {
 
         if (finalY > pageHeight - 40) {
             doc.addPage();
-            doc.addImage('/header.png', 'PNG', 0, 0, pageWidth, 30);
+            if (headerBase64) {
+                try {
+                    doc.addImage(headerBase64, 'PNG', 0, 0, pageWidth, 30);
+                } catch (e) {
+                    console.warn("Error adding header image to final PDF page", e);
+                }
+            }
             sigY = 50;
         } else {
             sigY = finalY;
@@ -375,7 +423,11 @@ const InventaireDetails: React.FC = () => {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center">
                                                 {item.materiel.photo_url ? (
-                                                    <img src={item.materiel.photo_url} className="h-10 w-10 rounded-full object-cover mr-3" />
+                                                    <img
+                                                        src={item.materiel.photo_url.startsWith('http') ? item.materiel.photo_url : `https://hckfizhzvslhyxsaftnx.supabase.co/storage/v1/object/public/materiel-photos/${item.materiel.photo_url}`}
+                                                        className="h-10 w-10 rounded-full object-cover mr-3"
+                                                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/40?text=IMG'; }}
+                                                    />
                                                 ) : (
                                                     <div className="h-10 w-10 rounded-full bg-gray-200 mr-3 flex items-center justify-center text-gray-500 text-xs">IMG</div>
                                                 )}
@@ -396,7 +448,11 @@ const InventaireDetails: React.FC = () => {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center">
                                                 {item.photo_url ? (
-                                                    <img src={item.photo_url} className="h-10 w-10 rounded-full object-cover mr-3 grayscale" />
+                                                    <img
+                                                        src={item.photo_url.startsWith('http') ? item.photo_url : `https://hckfizhzvslhyxsaftnx.supabase.co/storage/v1/object/public/materiel-photos/${item.photo_url}`}
+                                                        className="h-10 w-10 rounded-full object-cover mr-3 grayscale"
+                                                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/40?text=IMG'; }}
+                                                    />
                                                 ) : (
                                                     <div className="h-10 w-10 rounded-full bg-gray-200 mr-3 flex items-center justify-center text-gray-500 text-xs">IMG</div>
                                                 )}

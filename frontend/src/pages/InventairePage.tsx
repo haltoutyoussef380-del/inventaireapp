@@ -23,6 +23,7 @@ const InventairePage: React.FC = () => {
     const [pendingMateriel, setPendingMateriel] = useState<any | null>(null);
     const [myStats, setMyStats] = useState(0);
     const [isConfirming, setIsConfirming] = useState(false);
+    const [isImgLoading, setIsImgLoading] = useState(true);
 
     // Chargement des campagnes au démarrage
     useEffect(() => {
@@ -82,6 +83,8 @@ const InventairePage: React.FC = () => {
 
         try {
             const materiel = await inventaireService.getMaterielByCode(code);
+            console.log("Materiel scanné:", materiel);
+            setIsImgLoading(true); // Reset loading state for new image
             setPendingMateriel(materiel);
             const audio = new Audio('/beep.mp3');
             audio.play().catch(() => { });
@@ -242,9 +245,30 @@ const InventairePage: React.FC = () => {
 
                                 <div className="aspect-square bg-gray-100 rounded-xl overflow-hidden mb-4 border-2 border-gray-200 relative">
                                     {pendingMateriel.photo_url ? (
-                                        <img src={pendingMateriel.photo_url} alt="Materiel" className="w-full h-full object-cover" />
+                                        <>
+                                            {isImgLoading && (
+                                                <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
+                                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                                </div>
+                                            )}
+                                            <img
+                                                src={pendingMateriel.photo_url.startsWith('http')
+                                                    ? pendingMateriel.photo_url
+                                                    : `https://hckfizhzvslhyxsaftnx.supabase.co/storage/v1/object/public/materiel-photos/${pendingMateriel.photo_url}`}
+                                                alt="Materiel"
+                                                className={`w-full h-full object-cover transition-opacity duration-300 ${isImgLoading ? 'opacity-0' : 'opacity-100'}`}
+                                                onLoad={() => setIsImgLoading(false)}
+                                                onError={(e) => {
+                                                    console.error("Erreur chargement image:", pendingMateriel.photo_url);
+                                                    setIsImgLoading(false);
+                                                    (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400?text=Image+Introuvable';
+                                                }}
+                                            />
+                                        </>
                                     ) : (
-                                        <div className="flex items-center justify-center h-full text-gray-400">Pas de photo</div>
+                                        <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                                            <span>Pas de photo</span>
+                                        </div>
                                     )}
                                 </div>
 
@@ -274,10 +298,12 @@ const InventairePage: React.FC = () => {
 
                     <div className="bg-white p-4 rounded-xl shadow-md border-t-4 border-blue-500">
                         <h2 className="text-lg font-bold mb-4 text-center text-gray-700">Scanner le code-barres</h2>
-                        {/* Masquer le scanner si modale ouverte pour éviter conflit caméra/perf */}
-                        <div className={pendingMateriel ? "invisible h-0 overflow-hidden" : ""}>
-                            <BarcodeScanner onScanSuccess={handleScan} />
-                        </div>
+                        {/* Masquer et décharger le scanner si modale ouverte pour éviter conflit caméra/perf & caching du dernier QR */}
+                        {!pendingMateriel ? (
+                            <div>
+                                <BarcodeScanner onScanSuccess={handleScan} />
+                            </div>
+                        ) : null}
                         {pendingMateriel && <div className="h-64 flex items-center justify-center bg-gray-100 rounded text-gray-400">Scan en pause...</div>}
 
                         {lastScan && !pendingMateriel && (
