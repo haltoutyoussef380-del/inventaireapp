@@ -27,6 +27,7 @@ const InventairePage: React.FC = () => {
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const [lastSuccessfulCode, setLastSuccessfulCode] = useState<string | null>(null); // Parent-level cooldown
     const [scannerKey, setScannerKey] = useState(0); // Forcer le remount physique
+    const [lastRawCode, setLastRawCode] = useState<string | null>(null); // Debug: dernier code "lu"
 
     // Chargement des campagnes au démarrage
     useEffect(() => {
@@ -92,6 +93,7 @@ const InventairePage: React.FC = () => {
     };
 
     const handleScan = async (code: string) => {
+        setLastRawCode(code); // Debug trace
         if (!inventaireId || !user) return;
         if (pendingMateriel) return;
 
@@ -337,7 +339,22 @@ const InventairePage: React.FC = () => {
                     )}
 
                     <div className="bg-white p-4 rounded-xl shadow-md border-t-4 border-blue-500">
-                        <h2 className="text-lg font-bold mb-4 text-center text-gray-700">Scanner le code-barres</h2>
+                        <div className="flex justify-between items-center mb-2">
+                            <h2 className="text-lg font-bold text-gray-700">Scanner</h2>
+                            <button
+                                onClick={() => setScannerKey(k => k + 1)}
+                                className="text-[10px] bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 text-gray-500"
+                            >
+                                Reset Caméra (#{scannerKey})
+                            </button>
+                        </div>
+
+                        {lastRawCode && (
+                            <div className="mb-2 text-[10px] font-mono bg-yellow-50 p-1 border border-yellow-100 rounded text-yellow-700 text-center">
+                                DEBUG - Dernier texte lu : <strong>{lastRawCode}</strong>
+                            </div>
+                        )}
+
                         <div className="relative min-h-[300px] flex items-center justify-center bg-gray-900 rounded-lg overflow-hidden shadow-inner">
                             {!pendingMateriel && !lastSuccessfulCode ? (
                                 <BarcodeScanner
