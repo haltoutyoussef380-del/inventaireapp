@@ -24,6 +24,7 @@ const InventairePage: React.FC = () => {
     const [myStats, setMyStats] = useState(0);
     const [isConfirming, setIsConfirming] = useState(false);
     const [isImgLoading, setIsImgLoading] = useState(true);
+    const [lastSuccessfulCode, setLastSuccessfulCode] = useState<string | null>(null); // Parent-level cooldown
 
     // Chargement des campagnes au démarrage
     useEffect(() => {
@@ -51,8 +52,16 @@ const InventairePage: React.FC = () => {
         try {
             const stats = await inventaireService.getStats(inventaireId, user.id);
             setMyStats(stats.scannedCount);
+
+            // Charger aussi l'historique complet pour la liste
+            const history = await inventaireService.getLignesByInventaire(inventaireId);
+            const mappedItems = history.map((h: any) => ({
+                ...h.materiel,
+                fromHistory: true // optionnel: pour marquer que ça vient de la base
+            }));
+            setScannedItems(mappedItems);
         } catch (error) {
-            console.error("Erreur stats", error);
+            console.error("Erreur stats/history", error);
         }
     };
 
@@ -79,7 +88,13 @@ const InventairePage: React.FC = () => {
 
     const handleScan = async (code: string) => {
         if (!inventaireId || !user) return;
-        if (pendingMateriel) return; // Anti-doublon
+        if (pendingMateriel) return;
+
+        // Empêcher de rescanner immédiatement le même objet (cooldown parent)
+        if (code === lastSuccessfulCode) {
+            console.log("Ignoré: Cooldown sur le code:", code);
+            return;
+        }
 
         try {
             const materiel = await inventaireService.getMaterielByCode(code);
@@ -107,6 +122,11 @@ const InventairePage: React.FC = () => {
 
             setLastScan({ status: 'success', msg: `Confirmé: ${pendingMateriel.nom} `, item: pendingMateriel });
             setScannedItems(prev => [pendingMateriel, ...prev]);
+
+            // Activer le cooldown sur ce code pour 4 secondes
+            setLastSuccessfulCode(pendingMateriel.numero_inventaire);
+            setTimeout(() => setLastSuccessfulCode(null), 4000);
+
             setPendingMateriel(null);
 
             // Mise à jour du compteur

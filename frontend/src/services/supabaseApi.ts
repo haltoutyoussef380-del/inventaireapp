@@ -157,6 +157,25 @@ export const inventaireService = {
 
         if (error) throw error;
         return { scannedCount: count || 0 };
+    },
+
+    getLignesByInventaire: async (inventaireId: number) => {
+        const { data, error } = await supabase
+            .from('inventaire_lignes')
+            .select(`
+                id,
+                inventaire_id,
+                materiel_id,
+                date_scan,
+                presence,
+                scanne_par,
+                materiel:materiels(*)
+            `)
+            .eq('inventaire_id', inventaireId)
+            .order('date_scan', { ascending: false });
+
+        if (error) throw error;
+        return data;
     }
 };
 
