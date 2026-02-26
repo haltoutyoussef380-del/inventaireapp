@@ -26,6 +26,7 @@ const InventairePage: React.FC = () => {
     const [isImgLoading, setIsImgLoading] = useState(true);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const [lastSuccessfulCode, setLastSuccessfulCode] = useState<string | null>(null); // Parent-level cooldown
+    const [scannerKey, setScannerKey] = useState(0); // Forcer le remount physique
 
     // Chargement des campagnes au démarrage
     useEffect(() => {
@@ -129,7 +130,10 @@ const InventairePage: React.FC = () => {
 
             // Activer le cooldown sur ce code pour 4 secondes
             setLastSuccessfulCode(pendingMateriel.numero_inventaire);
-            setTimeout(() => setLastSuccessfulCode(null), 4000);
+            setTimeout(() => {
+                setLastSuccessfulCode(null);
+                setScannerKey(prev => prev + 1); // Forcer un nouveau "mount" frais de la caméra
+            }, 4000);
 
             setPendingMateriel(null);
 
@@ -138,12 +142,17 @@ const InventairePage: React.FC = () => {
 
         } catch (error: any) {
             console.error(error);
-            setLastScan({ status: 'error', msg: error.message || 'Erreur confirmation' });
+            const msg = error.message || 'Erreur confirmation';
+            setLastScan({ status: 'error', msg });
 
-            // Si c'est un doublon, on active quand même le cooldown pour arrêter la boucle
-            if (pendingMateriel && (error.message?.includes('Déjà scanné') || error.message?.includes('doublon'))) {
+            // En cas d'erreur (doublon ou autre), on active quand même le cooldown sur cet objet 
+            // pour permettre à l'utilisateur de passer à l'objet suivant sans boucle infinie.
+            if (pendingMateriel) {
                 setLastSuccessfulCode(pendingMateriel.numero_inventaire);
-                setTimeout(() => setLastSuccessfulCode(null), 5000);
+                setTimeout(() => {
+                    setLastSuccessfulCode(null);
+                    setScannerKey(prev => prev + 1); // Nouveau cycle
+                }, 5000);
             }
 
             setPendingMateriel(null);
@@ -329,24 +338,34 @@ const InventairePage: React.FC = () => {
 
                     <div className="bg-white p-4 rounded-xl shadow-md border-t-4 border-blue-500">
                         <h2 className="text-lg font-bold mb-4 text-center text-gray-700">Scanner le code-barres</h2>
-                        <div className="relative">
-                            <BarcodeScanner
-                                onScanSuccess={handleScan}
-                                paused={!!pendingMateriel || !!lastSuccessfulCode}
-                            />
-                            {(pendingMateriel || lastSuccessfulCode) && (
-                                <div className="absolute inset-0 z-10 bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center text-white text-center p-4">
-                                    <div className="bg-blue-600 p-3 rounded-full mb-3 animate-pulse">
-                                        <CheckCircle className="w-8 h-8" />
+                        <div className="relative min-h-[300px] flex items-center justify-center bg-gray-900 rounded-lg overflow-hidden shadow-inner">
+                            {!pendingMateriel && !lastSuccessfulCode ? (
+                                <BarcodeScanner
+                                    key={scannerKey}
+                                    onScanSuccess={handleScan}
+                                />
+                            ) : (
+                                <div className="absolute inset-0 z-10 bg-black/70 backdrop-blur-md flex flex-col items-center justify-center text-white text-center p-6 animate-in fade-in duration-300">
+                                    <div className="bg-blue-600 p-4 rounded-full mb-4 shadow-xl animate-bounce">
+                                        <CheckCircle className="w-10 h-10" />
                                     </div>
-                                    <p className="font-bold underline mb-1">Scan suspendu</p>
-                                    <p className="text-sm opacity-80">{pendingMateriel ? "Validation en cours..." : "Passez à l'objet suivant"}</p>
+                                    <h3 className="text-xl font-black mb-1">Scan en pause</h3>
+                                    <p className="text-blue-100 font-medium mb-4">
+                                        {pendingMateriel
+                                            ? `Vérification : ${pendingMateriel.numero_inventaire}`
+                                            : "Passez à l'objet suivant"}
+                                    </p>
+                                    {!pendingMateriel && (
+                                        <div className="w-full max-w-[150px] h-1.5 bg-white/20 rounded-full overflow-hidden">
+                                            <div className="h-full bg-blue-400 animate-shrink" style={{ animationDuration: '5s' }}></div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
 
                         {lastScan && !pendingMateriel && (
-                            <div className={`mt-4 p-4 rounded-lg text-center font-bold flex items-center justify-center ${lastScan.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                            <div className={`mt-4 p-4 rounded-lg text-center font-bold flex items-center justify-center animate-in slide-in-from-top-2 ${lastScan.status === 'success' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`}>
                                 {lastScan.status === 'success' ? <CheckCircle className="w-6 h-6 mr-2" /> : <AlertTriangle className="w-6 h-6 mr-2" />}
                                 {lastScan.msg}
                             </div>
