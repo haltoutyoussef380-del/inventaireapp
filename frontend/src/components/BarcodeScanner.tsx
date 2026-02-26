@@ -4,9 +4,10 @@ import { Html5Qrcode } from 'html5-qrcode';
 interface BarcodeScannerProps {
     onScanSuccess: (decodedText: string) => void;
     onScanFailure?: (error: any) => void;
+    paused?: boolean;
 }
 
-const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScanSuccess }) => {
+const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScanSuccess, paused }) => {
     const scannerRef = useRef<Html5Qrcode | null>(null);
     const [errorMsg, setErrorMsg] = useState<string>('');
     const mountedRef = useRef(false);
@@ -32,7 +33,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScanSuccess }) => {
                         aspectRatio: 1.0
                     },
                     (decodedText) => {
-                        if (mountedRef.current) {
+                        if (mountedRef.current && !paused) {
                             // On empêche le multi-scan instantané du même QR
                             if (decodedText !== lastScannedRef.current) {
                                 lastScannedRef.current = decodedText;

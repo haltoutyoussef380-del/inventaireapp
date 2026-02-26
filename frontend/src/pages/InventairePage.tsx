@@ -24,6 +24,7 @@ const InventairePage: React.FC = () => {
     const [myStats, setMyStats] = useState(0);
     const [isConfirming, setIsConfirming] = useState(false);
     const [isImgLoading, setIsImgLoading] = useState(true);
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const [lastSuccessfulCode, setLastSuccessfulCode] = useState<string | null>(null); // Parent-level cooldown
 
     // Chargement des campagnes au démarrage
@@ -49,6 +50,7 @@ const InventairePage: React.FC = () => {
 
     const loadStats = async () => {
         if (!inventaireId || !user) return;
+        setIsLoadingHistory(true);
         try {
             const stats = await inventaireService.getStats(inventaireId, user.id);
             setMyStats(stats.scannedCount);
@@ -62,6 +64,8 @@ const InventairePage: React.FC = () => {
             setScannedItems(mappedItems);
         } catch (error) {
             console.error("Erreur stats/history", error);
+        } finally {
+            setIsLoadingHistory(false);
         }
     };
 
@@ -135,6 +139,13 @@ const InventairePage: React.FC = () => {
         } catch (error: any) {
             console.error(error);
             setLastScan({ status: 'error', msg: error.message || 'Erreur confirmation' });
+
+            // Si c'est un doublon, on active quand même le cooldown pour arrêter la boucle
+            if (pendingMateriel && (error.message?.includes('Déjà scanné') || error.message?.includes('doublon'))) {
+                setLastSuccessfulCode(pendingMateriel.numero_inventaire);
+                setTimeout(() => setLastSuccessfulCode(null), 5000);
+            }
+
             setPendingMateriel(null);
         } finally {
             setIsConfirming(false);
@@ -318,13 +329,21 @@ const InventairePage: React.FC = () => {
 
                     <div className="bg-white p-4 rounded-xl shadow-md border-t-4 border-blue-500">
                         <h2 className="text-lg font-bold mb-4 text-center text-gray-700">Scanner le code-barres</h2>
-                        {/* Masquer et décharger le scanner si modale ouverte pour éviter conflit caméra/perf & caching du dernier QR */}
-                        {!pendingMateriel ? (
-                            <div>
-                                <BarcodeScanner onScanSuccess={handleScan} />
-                            </div>
-                        ) : null}
-                        {pendingMateriel && <div className="h-64 flex items-center justify-center bg-gray-100 rounded text-gray-400">Scan en pause...</div>}
+                        <div className="relative">
+                            <BarcodeScanner
+                                onScanSuccess={handleScan}
+                                paused={!!pendingMateriel || !!lastSuccessfulCode}
+                            />
+                            {(pendingMateriel || lastSuccessfulCode) && (
+                                <div className="absolute inset-0 z-10 bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center text-white text-center p-4">
+                                    <div className="bg-blue-600 p-3 rounded-full mb-3 animate-pulse">
+                                        <CheckCircle className="w-8 h-8" />
+                                    </div>
+                                    <p className="font-bold underline mb-1">Scan suspendu</p>
+                                    <p className="text-sm opacity-80">{pendingMateriel ? "Validation en cours..." : "Passez à l'objet suivant"}</p>
+                                </div>
+                            )}
+                        </div>
 
                         {lastScan && !pendingMateriel && (
                             <div className={`mt-4 p-4 rounded-lg text-center font-bold flex items-center justify-center ${lastScan.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
@@ -335,7 +354,17 @@ const InventairePage: React.FC = () => {
                     </div>
 
                     <div className="bg-white p-4 rounded-xl shadow-md">
-                        <h2 className="text-lg font-bold mb-4 text-gray-700">Session en cours</h2>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-lg font-bold text-gray-700">Historique Campagne</h2>
+                            <button
+                                onClick={loadStats}
+                                disabled={isLoadingHistory}
+                                className="text-blue-600 hover:text-blue-800 text-sm font-bold flex items-center disabled:opacity-50"
+                            >
+                                <Play className={`w-3 h-3 mr-1 rotate-90 ${isLoadingHistory ? 'animate-spin' : ''}`} />
+                                Actualiser
+                            </button>
+                        </div>
                         <ul className="divide-y divide-gray-100 max-h-[500px] overflow-y-auto">
                             {scannedItems.map((item, idx) => (
                                 <li key={idx} className="py-3 flex justify-between items-center group hover:bg-gray-50 px-2 rounded">
