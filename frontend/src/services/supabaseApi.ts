@@ -56,6 +56,33 @@ export const materielService = {
         return data;
     },
 
+    update: async (id: number, materiel: any) => {
+        const payload = { ...materiel };
+        if (!payload.date_acquisition) delete payload.date_acquisition;
+        if (payload.categorie_id) payload.categorie_id = parseInt(payload.categorie_id, 10);
+
+        // Remove Join data if present
+        delete payload.categories;
+
+        const { data, error } = await supabase
+            .from('materiels')
+            .update(payload)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    delete: async (id: number) => {
+        const { error } = await supabase
+            .from('materiels')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
+    },
+
     uploadPhoto: async (file: File) => {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Math.random()}.${fileExt}`;
@@ -176,6 +203,20 @@ export const inventaireService = {
 
         if (error) throw error;
         return data;
+    },
+
+    delete: async (id: number) => {
+        // Safe delete: remove lines first
+        await supabase
+            .from('inventaire_lignes')
+            .delete()
+            .eq('inventaire_id', id);
+
+        const { error } = await supabase
+            .from('inventaires')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
     }
 };
 

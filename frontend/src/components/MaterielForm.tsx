@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { materielService, categorieService } from '../services/supabaseApi';
 
-const MaterielForm = ({ onSuccess }: { onSuccess: () => void }) => {
+interface MaterielFormProps {
+    onSuccess: () => void;
+    initialData?: any;
+}
+
+const MaterielForm: React.FC<MaterielFormProps> = ({ onSuccess, initialData }) => {
     const [categories, setCategories] = useState([]);
     const [formData, setFormData] = useState({
         categorie_id: '',
@@ -20,7 +25,23 @@ const MaterielForm = ({ onSuccess }: { onSuccess: () => void }) => {
 
     useEffect(() => {
         categorieService.getAll().then(data => setCategories(data as any));
-    }, []);
+
+        if (initialData) {
+            // Map initialData to form state
+            setFormData({
+                categorie_id: initialData.categorie_id || '',
+                nom: initialData.nom || '',
+                marque: initialData.marque || '',
+                modele: initialData.modele || '',
+                numero_serie: initialData.numero_serie || '',
+                date_acquisition: initialData.date_acquisition ? initialData.date_acquisition.split('T')[0] : '',
+                service: initialData.service || '',
+                statut: initialData.statut || 'En service',
+                commentaires: initialData.commentaires || '',
+                photo_url: initialData.photo_url || ''
+            });
+        }
+    }, [initialData]);
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) {
@@ -42,12 +63,17 @@ const MaterielForm = ({ onSuccess }: { onSuccess: () => void }) => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await materielService.create(formData);
+            if (initialData?.id) {
+                await materielService.update(initialData.id, formData);
+            } else {
+                await materielService.create(formData);
+            }
             onSuccess();
-            // Reset form or close modal
-            setFormData({ ...formData, nom: '', numero_serie: '', photo_url: '' });
+            if (!initialData) {
+                setFormData({ ...formData, nom: '', numero_serie: '', photo_url: '' });
+            }
         } catch (error) {
-            alert('Erreur lors de la création');
+            alert('Erreur lors de l\'enregistrement');
             console.error(error);
         }
     };
@@ -92,6 +118,20 @@ const MaterielForm = ({ onSuccess }: { onSuccess: () => void }) => {
                         value={formData.numero_serie} onChange={e => setFormData({ ...formData, numero_serie: e.target.value })} />
                 </div>
                 <div>
+                    <label className="block text-sm font-medium">Statut</label>
+                    <select
+                        className="w-full border p-2 rounded"
+                        value={formData.statut}
+                        onChange={e => setFormData({ ...formData, statut: e.target.value })}
+                        required
+                    >
+                        <option value="En service">En service</option>
+                        <option value="En maintenance">En maintenance</option>
+                        <option value="Rebut">Rebut</option>
+                        <option value="Archivé">Archivé</option>
+                    </select>
+                </div>
+                <div>
                     <label className="block text-sm font-medium">Service / Emplacement</label>
                     <input type="text" className="w-full border p-2 rounded"
                         value={formData.service} onChange={e => setFormData({ ...formData, service: e.target.value })} />
@@ -107,7 +147,7 @@ const MaterielForm = ({ onSuccess }: { onSuccess: () => void }) => {
                         <input
                             type="file"
                             accept="image/*"
-                            capture="environment" // Forces camera on mobile
+                            capture="environment"
                             onChange={handleImageUpload}
                             className="block w-full text-sm text-gray-500
                             file:mr-4 file:py-2 file:px-4
@@ -119,13 +159,14 @@ const MaterielForm = ({ onSuccess }: { onSuccess: () => void }) => {
                         />
                         {uploading && <span className="text-gray-500 text-sm">Upload en cours...</span>}
                         {formData.photo_url && (
-                            <img src={formData.photo_url} alt="Aperçu" className="h-16 w-16 object-cover rounded" />
+                            <img src={formData.photo_url.startsWith('http') ? formData.photo_url : `https://hckfizhzvslhyxsaftnx.supabase.co/storage/v1/object/public/materiel-photos/${formData.photo_url}`}
+                                alt="Aperçu" className="h-16 w-16 object-cover rounded" />
                         )}
                     </div>
                 </div>
             </div>
-            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded" disabled={uploading}>
-                {uploading ? 'Patientez...' : 'Enregistrer'}
+            <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded shadow font-bold" disabled={uploading}>
+                {uploading ? 'Patientez...' : initialData ? 'Mettre à jour' : 'Enregistrer'}
             </button>
         </form>
     );
