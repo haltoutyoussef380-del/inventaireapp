@@ -33,7 +33,6 @@ const InventairePage: React.FC = () => {
     const [isImgLoading, setIsImgLoading] = useState(true);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const [lastSuccessfulCode, setLastSuccessfulCode] = useState<string | null>(null);
-    const [scannerKey, setScannerKey] = useState(0);
     const [lastRawCode, setLastRawCode] = useState<string | null>(null);
 
     // Chargement des campagnes au démarrage
@@ -156,7 +155,6 @@ const InventairePage: React.FC = () => {
             setLastSuccessfulCode(pendingMateriel.numero_inventaire);
             setTimeout(() => {
                 setLastSuccessfulCode(null);
-                setScannerKey(prev => prev + 1);
             }, 2000); // Réduit à 2s
 
             setPendingMateriel(null);
@@ -171,7 +169,6 @@ const InventairePage: React.FC = () => {
                 setLastSuccessfulCode(pendingMateriel.numero_inventaire);
                 setTimeout(() => {
                     setLastSuccessfulCode(null);
-                    setScannerKey(prev => prev + 1);
                 }, 2000);
             }
 
@@ -375,12 +372,12 @@ const InventairePage: React.FC = () => {
                     <div className="lg:col-span-12 xl:col-span-8 bg-white p-8 rounded-[32px] shadow-xl border border-gray-100">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-black text-gray-800 uppercase tracking-widest">Zone de Scan</h2>
-                            <button
-                                onClick={() => setScannerKey(k => k + 1)}
-                                className="text-[10px] font-black uppercase tracking-widest bg-gray-50 px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors"
-                            >
-                                Réinitialiser Caméra
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${!pendingMateriel && !lastSuccessfulCode ? 'bg-green-500 animate-pulse' : 'bg-amber-500'}`}></div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                    {!pendingMateriel && !lastSuccessfulCode ? 'Prêt' : 'En pause'}
+                                </span>
+                            </div>
                         </div>
 
                         {lastRawCode && (
@@ -390,13 +387,13 @@ const InventairePage: React.FC = () => {
                         )}
 
                         <div className="relative aspect-[4/3] max-h-[500px] flex items-center justify-center bg-gray-900 rounded-[28px] overflow-hidden shadow-2xl border-4 border-white">
-                            {!pendingMateriel && !lastSuccessfulCode ? (
-                                <BarcodeScanner
-                                    key={scannerKey}
-                                    onScanSuccess={handleScan}
-                                />
-                            ) : (
-                                <div className="absolute inset-0 z-10 bg-blue-900/90 backdrop-blur-lg flex flex-col items-center justify-center text-white text-center p-8">
+                            <BarcodeScanner
+                                isPaused={!!pendingMateriel || !!lastSuccessfulCode}
+                                onScanSuccess={handleScan}
+                            />
+
+                            {(pendingMateriel || lastSuccessfulCode) && (
+                                <div className="absolute inset-0 z-20 bg-blue-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-white text-center p-8 animate-in fade-in duration-300">
                                     <div className="bg-white p-6 rounded-full mb-6 shadow-2xl animate-bounce">
                                         <CheckCircle className="w-12 h-12 text-blue-600" />
                                     </div>
@@ -406,7 +403,7 @@ const InventairePage: React.FC = () => {
                                     <p className="text-blue-100 font-bold mb-8">
                                         {pendingMateriel
                                             ? `ID: ${pendingMateriel.numero_inventaire}`
-                                            : "Réinitialisation de la caméra..."}
+                                            : "Préparation..."}
                                     </p>
                                     {!pendingMateriel && (
                                         <div className="w-full max-w-[150px] h-2 bg-white/20 rounded-full overflow-hidden">
