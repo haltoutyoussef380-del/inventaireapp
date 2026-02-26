@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { materielService } from '../services/supabaseApi';
 import MaterielForm from '../components/MaterielForm';
 import { Printer } from 'lucide-react';
@@ -10,7 +10,6 @@ const MaterielList: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
     const [logoBase64, setLogoBase64] = useState<string>('');
     const { role } = useAuth();
-    const qrContainerRef = useRef<HTMLDivElement>(null);
 
     const loadData = async () => {
         try {
@@ -32,7 +31,6 @@ const MaterielList: React.FC = () => {
             reader.readAsDataURL(blob);
         } catch (e) {
             console.error("Logo fetch error", e);
-            // Fallback: stay with empty or use origin
             setLogoBase64(`${window.location.origin}/logo.png`);
         }
     };
@@ -43,7 +41,14 @@ const MaterielList: React.FC = () => {
     }, []);
 
     const handlePrint = (materiel: any) => {
-        // Load dynamic settings or use defaults
+        // Get the specific QR container innerHTML using ID
+        const qrContent = document.getElementById(`qr-code-hidden-${materiel.id}`)?.innerHTML;
+
+        if (!qrContent) {
+            alert("Erreur de génération du QR Code");
+            return;
+        }
+
         const stored = localStorage.getItem('zebra_printer_settings');
         const s = stored ? JSON.parse(stored) : {
             width: 50,
@@ -54,11 +59,6 @@ const MaterielList: React.FC = () => {
             logoWidth: 15
         };
 
-        // Get QR code SVG from the hidden container (we'll update it temporarily)
-        const qrContainer = qrContainerRef.current;
-        if (!qrContainer) return;
-
-        // Create a hidden iframe for printing
         let iframe = document.getElementById('print-iframe') as HTMLIFrameElement;
         if (!iframe) {
             iframe = document.createElement('iframe');
@@ -104,13 +104,13 @@ const MaterielList: React.FC = () => {
                                 margin: 0 !important;
                                 padding: 1mm 2mm !important;
                                 box-sizing: border-box;
-                                justify-content: space-between; /* Fill height */
+                                justify-content: space-between;
                             }
                             .header-section {
                                 width: 100%;
-                                margin-bottom: 0.5mm; /* Reduced space */
+                                margin-bottom: 0.5mm;
                                 text-align: left;
-                                border-bottom: 0.2mm solid #000; /* Darker line for print */
+                                border-bottom: 0.2mm solid #000;
                                 padding-bottom: 0.3mm;
                             }
                             .name {
@@ -122,7 +122,7 @@ const MaterielList: React.FC = () => {
                                 text-overflow: ellipsis;
                             }
                             .subtitle {
-                                font-size: ${s.fontSize}pt; /* Same as name */
+                                font-size: ${s.fontSize}pt;
                                 color: #444;
                                 margin-top: 0.1mm;
                                 white-space: nowrap;
@@ -150,7 +150,7 @@ const MaterielList: React.FC = () => {
                                 margin-bottom: 0.1mm;
                             }
                             .inv-num {
-                                font-size: ${s.fontSize}pt; /* A bit larger */
+                                font-size: ${s.fontSize}pt;
                                 font-weight: bold;
                                 font-family: 'Courier New', monospace;
                                 white-space: nowrap;
@@ -177,7 +177,7 @@ const MaterielList: React.FC = () => {
                         <div class="bottom-row">
                             <div class="col-left">
                                 <div class="qr-code">
-                                    ${qrContainer.innerHTML}
+                                    ${qrContent}
                                 </div>
                                 <div class="inv-num">${materiel.numero_inventaire}</div>
                             </div>
@@ -204,10 +204,10 @@ const MaterielList: React.FC = () => {
 
     return (
         <div>
-            {/* Hidden QR Generator */}
+            {/* Unique hidden containers for each material QR */}
             <div style={{ display: 'none' }}>
                 {materiels.map((m: any) => (
-                    <div key={m.id} id={`qr-${m.numero_inventaire}`} ref={qrContainerRef}>
+                    <div key={m.id} id={`qr-code-hidden-${m.id}`}>
                         <QRCodeSVG value={m.numero_inventaire} size={128} />
                     </div>
                 ))}
