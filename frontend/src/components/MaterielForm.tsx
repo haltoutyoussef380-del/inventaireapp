@@ -18,7 +18,8 @@ const MaterielForm: React.FC<MaterielFormProps> = ({ onSuccess, initialData }) =
         service: '',
         statut: 'En service',
         commentaires: '',
-        photo_url: ''
+        photo_url: '',
+        adresse_ip: ''
     });
 
     const [uploading, setUploading] = useState(false);
@@ -38,7 +39,8 @@ const MaterielForm: React.FC<MaterielFormProps> = ({ onSuccess, initialData }) =
                 service: initialData.service || '',
                 statut: initialData.statut || 'En service',
                 commentaires: initialData.commentaires || '',
-                photo_url: initialData.photo_url || ''
+                photo_url: initialData.photo_url || '',
+                adresse_ip: initialData.adresse_ip || ''
             });
         }
     }, [initialData]);
@@ -141,6 +143,19 @@ const MaterielForm: React.FC<MaterielFormProps> = ({ onSuccess, initialData }) =
                     <input type="date" className="w-full border p-2 rounded"
                         value={formData.date_acquisition} onChange={e => setFormData({ ...formData, date_acquisition: e.target.value })} />
                 </div>
+                {/* Champ Adresse IP conditionnel pour le matériel informatique */}
+                {(categories.find((c: any) => c.id.toString() === formData.categorie_id.toString()) as any)?.code === 'INF' && (
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-bold text-blue-600">Adresse IP (Réseau)</label>
+                        <input
+                            type="text"
+                            className="w-full border-2 border-blue-100 p-2 rounded bg-blue-50 focus:border-blue-500 outline-none font-mono"
+                            placeholder="ex: 192.168.1.50"
+                            value={formData.adresse_ip}
+                            onChange={e => setFormData({ ...formData, adresse_ip: e.target.value })}
+                        />
+                    </div>
+                )}
                 <div className="md:col-span-2">
                     <label className="block text-sm font-medium">Photo</label>
                     <div className="flex items-center space-x-4">

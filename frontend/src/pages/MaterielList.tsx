@@ -108,7 +108,7 @@ const MaterielList: React.FC = () => {
                       <div class="label-container">
                         <div class="header-section">
                             <div class="name">${materiel.nom}</div>
-                            <div class="subtitle">${materiel.marque || 'SANS MARQUE'}</div>
+                            <div class="subtitle">${materiel.marque || 'SANS MARQUE'}${materiel.adresse_ip ? ' - ' + materiel.adresse_ip : ''}</div>
                         </div>
                         <div class="bottom-row">
                             <div class="col-left">
