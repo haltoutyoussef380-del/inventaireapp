@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { inventaireService } from '../services/supabaseApi';
 import BarcodeScanner from '../components/BarcodeScanner';
-import { Play, PlusCircle, CheckCircle, AlertTriangle, List, ArrowLeft, Trophy, BarChart2, Trash2, Package, Database } from 'lucide-react';
+import { Play, PlusCircle, CheckCircle, AlertTriangle, List, ArrowLeft, Trophy, BarChart2, Trash2, Package, Database, MapPin, Calendar, Layout, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -156,7 +156,7 @@ const InventairePage: React.FC = () => {
         <div className="min-h-screen bg-slate-50 animate-fade-in">
             <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
                 <h1 className="text-3xl font-black text-gst-dark tracking-tight uppercase">
-                    {view === 'scan' ? 'Zone de Collecte' : 'Campagnes Actives'}
+                    {view === 'create' ? 'Initialisation' : view === 'scan' ? 'Zone de Collecte' : 'Campagnes Actives'}
                 </h1>
 
                 {view === 'scan' && (
@@ -174,7 +174,7 @@ const InventairePage: React.FC = () => {
                             onClick={() => setView('create')}
                             className="bg-gst-dark text-white px-10 py-5 rounded-[24px] font-black shadow-xl shadow-gst-dark/20 hover:bg-gst-light transition-all hover:-translate-y-1 flex items-center justify-center gap-2 uppercase tracking-widest text-sm"
                         >
-                            <PlusCircle className="w-5 h-5" /> Nouvelle Mission
+                            <PlusCircle className="w-4 h-4" /> Nouvelle Mission
                         </button>
                     )}
 
@@ -236,6 +236,57 @@ const InventairePage: React.FC = () => {
                 </div>
             )}
 
+            {view === 'create' && (
+                <div className="bg-white p-12 rounded-[48px] shadow-3xl max-w-2xl mx-auto border border-gray-100 animate-in slide-in-from-bottom-8 duration-500 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-gst-light/5 rounded-full blur-3xl -mr-24 -mt-24"></div>
+
+                    <button onClick={() => setView('list')} className="text-gray-400 mb-8 flex items-center hover:text-gst-dark font-black transition-colors uppercase tracking-[0.2em] text-[10px] bg-slate-50 px-4 py-2 rounded-full shadow-sm">
+                        <ArrowLeft className="w-3 h-3 mr-2" /> Retour à la liste
+                    </button>
+
+                    <h2 className="text-3xl font-black mb-10 text-gst-dark uppercase tracking-tight border-l-4 border-gst-light pl-6">Nouvelle Campagne</h2>
+
+                    <form onSubmit={handleCreate} className="space-y-8 relative z-10">
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] pl-2">Nom du projet d'inventaire</label>
+                            <div className="relative">
+                                <Layout className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 w-5 h-5" />
+                                <input type="text" required
+                                    className="w-full bg-slate-50 border-2 border-transparent focus:border-gst-light focus:bg-white p-5 pl-14 rounded-[28px] transition-all outline-none font-black text-gst-dark"
+                                    value={newInv.nom} onChange={e => setNewInv({ ...newInv, nom: e.target.value })}
+                                    placeholder="ex: CHU - INVENTAIRE ANNUEL 2026" />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] pl-2">Périmètre / Service</label>
+                                <div className="relative">
+                                    <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 w-5 h-5" />
+                                    <input type="text"
+                                        className="w-full bg-slate-50 border-2 border-transparent focus:border-gst-light focus:bg-white p-5 pl-14 rounded-[28px] transition-all outline-none font-black text-gst-dark"
+                                        value={newInv.service_perimetre} onChange={e => setNewInv({ ...newInv, service_perimetre: e.target.value })}
+                                        placeholder="ex: Bloc Opératoire" />
+                                </div>
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] pl-2">Date de lancement</label>
+                                <div className="relative">
+                                    <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 w-5 h-5" />
+                                    <input type="date" required
+                                        className="w-full bg-slate-50 border-2 border-transparent focus:border-gst-light focus:bg-white p-5 pl-14 rounded-[28px] transition-all outline-none font-black text-gst-dark"
+                                        value={newInv.date_debut} onChange={e => setNewInv({ ...newInv, date_debut: e.target.value })} />
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" className="w-full bg-gst-dark text-white py-6 rounded-[28px] font-black text-lg hover:bg-gst-light shadow-2xl shadow-gst-dark/20 transition-all transform active:scale-[0.98] uppercase mt-4">
+                            Lancer la Mission de Collecte
+                        </button>
+                    </form>
+                </div>
+            )}
+
             {view === 'scan' && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     <button onClick={exitScan} className="lg:col-span-12 w-fit text-gray-400 flex items-center hover:text-red-600 mb-2 font-black transition-colors uppercase tracking-[0.2em] text-[10px] bg-white px-4 py-2 rounded-full shadow-sm">
@@ -255,6 +306,12 @@ const InventairePage: React.FC = () => {
                                 </span>
                             </div>
                         </div>
+
+                        {lastRawCode && (
+                            <div className="mb-4 text-[10px] font-black font-mono bg-gst-light/10 text-gst-light p-3 rounded-2xl text-center uppercase tracking-widest border border-gst-light/20">
+                                SIGNAL DÉTECTÉ : {lastRawCode} 📡
+                            </div>
+                        )}
 
                         <div className="relative aspect-video max-h-[600px] flex items-center justify-center bg-gst-dark rounded-[40px] overflow-hidden shadow-2xl border-[12px] border-white ring-1 ring-gray-100">
                             <BarcodeScanner
@@ -291,7 +348,7 @@ const InventairePage: React.FC = () => {
                     </div>
 
                     <div className="lg:col-span-12 xl:col-span-4 flex flex-col gap-8">
-                        {/* Validation Card (Mobile Float / Side) */}
+                        {/* Validation Card */}
                         {pendingMateriel && (
                             <div className="bg-gst-dark rounded-[40px] p-10 shadow-3xl animate-in slide-in-from-right duration-500 text-white border-4 border-gst-light/20 scale-105 origin-top">
                                 <h2 className="text-xs font-black uppercase tracking-[0.3em] text-gst-light mb-8 text-center underline decoration-gst-light/50 underline-offset-8">Confirmation Requise</h2>
@@ -330,7 +387,7 @@ const InventairePage: React.FC = () => {
                             <div className="flex justify-between items-center mb-10">
                                 <h2 className="text-sm font-black text-gst-dark uppercase tracking-[0.3em]">Historique Live</h2>
                                 <button onClick={loadStats} className="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center text-gst-light hover:bg-gst-light hover:text-white transition-all shadow-sm">
-                                    <List className={`w-5 h-5 ${isLoadingHistory ? 'animate-spin' : ''}`} />
+                                    <RefreshCw className={`w-5 h-5 ${isLoadingHistory ? 'animate-spin' : ''}`} />
                                 </button>
                             </div>
                             <ul className="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-1">

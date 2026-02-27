@@ -264,7 +264,7 @@ const PrinterConfig: React.FC = () => {
                                         className="bg-gst-dark/5 p-2 rounded-xl flex flex-col items-center justify-center border border-gst-dark/10 shadow-inner"
                                         style={{ width: `${settings.logoWidth}mm`, height: `${settings.height * 0.65}mm` }}
                                     >
-                                        <div className="w-full h-full bg-contain bg-center bg-no-repeat opacity-50 contrast-125 grayscale" style={{ backgroundImage: 'url("/logo.png")' }}></div>
+                                        <div className="w-full h-full bg-contain bg-center bg-no-repeat opacity-50 contrast-125 grayscale" style={{ backgroundImage: `url("${import.meta.env.BASE_URL}logo.png")` }}></div>
                                     </div>
                                 </div>
                             </div>

@@ -27,7 +27,7 @@ const Layout: React.FC = () => {
             {/* --- HEADER OFFICIEL GST --- */}
             <div className="w-full bg-white border-b border-gray-200 shadow-sm z-50">
                 <img
-                    src="/header.png"
+                    src={`${import.meta.env.BASE_URL}header.png`}
                     alt="Header GST"
                     className="w-full max-h-24 object-cover md:object-contain"
                 />
@@ -45,7 +45,7 @@ const Layout: React.FC = () => {
                 {/* Sidebar */}
                 <aside className={`fixed z-50 inset-y-0 left-0 w-64 bg-gst-dark text-white transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                     <div className="flex flex-col items-center justify-center py-8 border-b border-white/10">
-                        <img src="/logo.png" alt="GST Logo" className="w-24 h-24 mb-4 object-contain" />
+                        <img src={`${import.meta.env.BASE_URL}logo.png`} alt="GST Logo" className="w-24 h-24 mb-4 object-contain" />
                         <span className="text-sm font-black tracking-widest uppercase text-blue-200">Inventaire GST</span>
                     </div>
 
@@ -56,8 +56,8 @@ const Layout: React.FC = () => {
                                 to={item.path}
                                 onClick={() => setSidebarOpen(false)}
                                 className={`flex items-center px-4 py-3 rounded-xl transition-all group ${isActive(item.path)
-                                        ? 'bg-gst-light text-white shadow-lg'
-                                        : 'text-blue-100 hover:bg-white/10'
+                                    ? 'bg-gst-light text-white shadow-lg'
+                                    : 'text-blue-100 hover:bg-white/10'
                                     }`}
                             >
                                 <item.icon className={`w-5 h-5 mr-3 ${isActive(item.path) ? 'text-white' : 'text-gst-light group-hover:text-white'}`} />
@@ -75,8 +75,8 @@ const Layout: React.FC = () => {
                                         to={item.path}
                                         onClick={() => setSidebarOpen(false)}
                                         className={`flex items-center px-4 py-3 rounded-xl transition-all group ${isActive(item.path)
-                                                ? 'bg-gst-light text-white shadow-lg'
-                                                : 'text-blue-100 hover:bg-white/10'
+                                            ? 'bg-gst-light text-white shadow-lg'
+                                            : 'text-blue-100 hover:bg-white/10'
                                             }`}
                                     >
                                         <item.icon className={`w-5 h-5 mr-3 ${isActive(item.path) ? 'text-white' : 'text-gst-light group-hover:text-white'}`} />

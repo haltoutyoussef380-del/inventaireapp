@@ -36,7 +36,7 @@ const Login: React.FC = () => {
                     {/* Header Image */}
                     <div className="bg-gst-dark p-10 flex flex-col items-center">
                         <div className="bg-white p-4 rounded-3xl shadow-lg mb-6 transform -rotate-3 hover:rotate-0 transition-transform duration-300">
-                            <img src="/logo.png" alt="Logo" className="w-24 h-24 object-contain" />
+                            <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Logo" className="w-24 h-24 object-contain" />
                         </div>
                         <h1 className="text-white text-2xl font-black text-center leading-tight tracking-tight uppercase">
                             Gestion d'Inventaire
