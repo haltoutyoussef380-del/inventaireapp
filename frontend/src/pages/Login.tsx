@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabase';
 import { useNavigate } from 'react-router-dom';
+import { Lock, Mail, ChevronRight } from 'lucide-react';
 
 const Login: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -25,40 +26,83 @@ const Login: React.FC = () => {
     };
 
     return (
-        <div className="flex h-screen items-center justify-center bg-gray-100">
-            <div className="w-full max-w-md bg-white p-8 rounded shadow-lg">
-                <h1 className="text-2xl font-bold mb-6 text-center text-blue-600">Hôpital Inventaire</h1>
-                <h2 className="text-xl mb-4 text-center">Connexion</h2>
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 relative overflow-hidden font-sans">
+            {/* Decoration Circles */}
+            <div className="absolute -top-24 -left-24 w-96 h-96 bg-gst-light/10 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-gst-dark/5 rounded-full blur-3xl"></div>
 
-                <form onSubmit={handleLogin} className="space-y-4">
-                    <div>
-                        <label className="block text-gray-700">Email</label>
-                        <input
-                            type="email"
-                            className="w-full border p-2 rounded focus:outline-none focus:border-blue-500"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
+            <div className="w-full max-w-md px-6 z-10 animate-in fade-in zoom-in duration-500">
+                <div className="bg-white rounded-[40px] shadow-2xl overflow-hidden border border-gray-100">
+                    {/* Header Image */}
+                    <div className="bg-gst-dark p-10 flex flex-col items-center">
+                        <div className="bg-white p-4 rounded-3xl shadow-lg mb-6 transform -rotate-3 hover:rotate-0 transition-transform duration-300">
+                            <img src="/logo.png" alt="Logo" className="w-24 h-24 object-contain" />
+                        </div>
+                        <h1 className="text-white text-2xl font-black text-center leading-tight tracking-tight uppercase">
+                            Gestion d'Inventaire
+                        </h1>
+                        <p className="text-blue-200 text-xs font-bold mt-2 uppercase tracking-widest">
+                            CHU Mohammed VI Psychiatrie
+                        </p>
                     </div>
-                    <div>
-                        <label className="block text-gray-700">Mot de passe</label>
-                        <input
-                            type="password"
-                            className="w-full border p-2 rounded focus:outline-none focus:border-blue-500"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
+
+                    <div className="p-10">
+                        <h2 className="text-xl font-bold text-gray-800 mb-8 border-l-4 border-gst-light pl-4">Connexion</h2>
+
+                        <form onSubmit={handleLogin} className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-xs font-black text-gray-400 uppercase tracking-widest pl-2">Email Professionnel</label>
+                                <div className="relative">
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 w-5 h-5" />
+                                    <input
+                                        type="email"
+                                        className="w-full bg-gray-50 border-2 border-transparent focus:border-gst-light focus:bg-white p-4 pl-12 rounded-2xl transition-all outline-none font-bold text-gray-700"
+                                        placeholder="votre@chu.ma"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-black text-gray-400 uppercase tracking-widest pl-2">Mot de passe</label>
+                                <div className="relative">
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 w-5 h-5" />
+                                    <input
+                                        type="password"
+                                        className="w-full bg-gray-50 border-2 border-transparent focus:border-gst-light focus:bg-white p-4 pl-12 rounded-2xl transition-all outline-none font-bold text-gray-700"
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="group w-full bg-gst-dark text-white p-5 rounded-3xl font-black text-lg shadow-xl shadow-gst-dark/20 hover:bg-gst-light transition-all transform active:scale-[0.98] disabled:opacity-50 flex items-center justify-center"
+                            >
+                                {loading ? (
+                                    <div className="animate-spin rounded-full h-6 w-6 border-4 border-white border-t-transparent"></div>
+                                ) : (
+                                    <>
+                                        Se connecter
+                                        <ChevronRight className="ml-2 w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                                    </>
+                                )}
+                            </button>
+                        </form>
                     </div>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 disabled:opacity-50"
-                    >
-                        {loading ? 'Chargement...' : 'Se connecter'}
-                    </button>
-                </form>
+
+                    <div className="bg-gray-50 p-6 border-t border-gray-100 flex items-center justify-center">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                            Sécurisé par GST • 2026
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     );

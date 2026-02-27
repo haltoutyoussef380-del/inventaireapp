@@ -1,9 +1,7 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../supabase';
-import { ArrowLeft, CheckCircle, Download, XCircle } from 'lucide-react';
-
+import { ArrowLeft, CheckCircle, Download, XCircle, FileText, Database, Users, Calendar } from 'lucide-react';
 
 interface InventoryItem {
     id: number;
@@ -14,9 +12,9 @@ interface InventoryItem {
         photo_url?: string;
         service?: string;
     };
-    scanne_par: string; // user_id
+    scanne_par: string;
     created_at: string;
-    agent_name?: string; // joined
+    agent_name?: string;
 }
 
 interface MissingItem {
@@ -41,15 +39,11 @@ const InventaireDetails: React.FC = () => {
 
     const loadData = async () => {
         if (!id) return;
-        console.log("Loading inventory details for ID:", id);
         setLoading(true);
         try {
-            // 1. Get Inventory Info
             const { data: inv } = await supabase.from('inventaires').select('*').eq('id', id).single();
             setInventaireInfo(inv);
 
-            // 2. Get Scanned Items (with Materiel details and Profile name)
-            // Robust join: fetch everything from profile to see what's available
             const { data: scans, error: scanError } = await supabase
                 .from('inventaire_lignes')
                 .select(`
@@ -59,35 +53,22 @@ const InventaireDetails: React.FC = () => {
                 `)
                 .eq('inventaire_id', id);
 
-            if (scanError) {
-                console.error("Scan fetch error:", scanError);
-                throw scanError;
-            }
-            console.log("Scans fetched:", scans?.length);
+            if (scanError) throw scanError;
 
-            // Flatten data for easier use
             const formattedScans = scans.map((line: any) => ({
                 ...line,
                 agent_name: line.agent?.full_name || line.agent?.email || 'Inconnu',
-                created_at: line.date_scan || line.created_at // Compatibility
+                created_at: line.date_scan || line.created_at
             }));
             setScannedItems(formattedScans);
 
-            // 3. Calculate Missing Items
-            // Logic: All Active Materiels NOT IN Scanned Material IDs
             const scannedIds = scans.map((s: any) => s.materiel_id);
-
-            let query = supabase.from('materiels').select('*').neq('statut', 'Rebut');
-            // If the inventory has specific scope (e.g. only one service), filter here?
-            // For now, assuming Global Inventory on the whole active stock.
-
-            const { data: allMateriels } = await query;
+            const { data: allMateriels } = await supabase.from('materiels').select('*').neq('statut', 'Rebut');
 
             if (allMateriels) {
                 const missing = allMateriels.filter(m => !scannedIds.includes(m.id));
                 setMissingItems(missing);
             }
-
         } catch (error) {
             console.error("Error loading details:", error);
         } finally {
@@ -95,129 +76,10 @@ const InventaireDetails: React.FC = () => {
         }
     };
 
-    const handleExport = async () => {
-        const ExcelJS = await import('exceljs');
-        const saveAs = (await import('file-saver')).default;
-
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet("Inventaire Complet");
-
-        // Helper for GitHub Pages paths
-        const baseUrl = import.meta.env.BASE_URL || '/';
-        const getFullUrl = (path: string) => {
-            const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-            return `${baseUrl}${cleanPath}`;
-        };
-
-        // 1. Add Header Image
-        try {
-            const response = await fetch(getFullUrl('header.png'));
-            const buffer = await response.arrayBuffer();
-            const imageId = workbook.addImage({
-                buffer: buffer,
-                extension: 'png',
-            });
-            worksheet.addImage(imageId, {
-                tl: { col: 0, row: 0 },
-                ext: { width: 500, height: 60 }
-            });
-        } catch (e) {
-            console.warn("Header image not found for Excel", e);
-        }
-
-        // 2. Metadata (starting after image)
-        worksheet.addRow([]); worksheet.addRow([]); worksheet.addRow([]); worksheet.addRow([]); // Spacers
-
-        const titleRow = worksheet.addRow([`RAPPORT D'INVENTAIRE CONSOLIDÉ`]);
-        titleRow.font = { bold: true, size: 14 };
-
-        const campaignRow = worksheet.addRow([`Campagne : ${inventaireInfo?.nom}`]);
-        campaignRow.font = { bold: true };
-
-        worksheet.addRow([`Date de génération : ${new Date().toLocaleString()}`]);
-        worksheet.addRow([]); // Spacer
-
-        // 3. Prepare Consolidated Data
-        // Combine everything: all materials + their scan status
-        const allData = [...scannedItems.map(i => ({ ...i.materiel, scanned: true, scanDetails: i })),
-        ...missingItems.map(i => ({ ...i, scanned: false, scanDetails: null }))];
-
-        // Sort by Category then Name
-        allData.sort((a: any, b: any) => (a.categorie || '').localeCompare(b.categorie || '') || a.nom.localeCompare(b.nom));
-
-        const formattedData = allData.map((item: any) => ({
-            'Nom Article': item.nom,
-            'N° Inventaire': item.numero_inventaire,
-            'Statut Inventaire': item.scanned ? 'PRÉSENT' : 'ABSENT',
-            'Service': item.service || 'N/A',
-            'État': item.statut || 'N/A',
-            'Catégorie': item.categorie || 'N/A',
-            'Localisation': item.emplacement || 'N/A',
-            'Scanné Par': item.scanDetails ? (item.scanDetails as any).agent_name : '-',
-            'Date Scan': item.scanDetails ? new Date((item.scanDetails as any).created_at).toLocaleString() : '-'
-        }));
-
-        // 4. Add Table
-        const columns = Object.keys(formattedData[0] || {}).map(key => ({ header: key, key: key, width: 22 }));
-        worksheet.columns = columns;
-
-        // Header style
-        const headerRowIndex = 9;
-        const headerRow = worksheet.getRow(headerRowIndex);
-        columns.forEach((col, idx) => {
-            const cell = headerRow.getCell(idx + 1);
-            cell.value = col.header;
-            cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-            cell.fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: 'FF1F497D' } // Navy blue
-            };
-            cell.alignment = { vertical: 'middle', horizontal: 'center' };
-        });
-
-        // Data rows with conditional formatting for Status
-        formattedData.forEach((item) => {
-            const row = worksheet.addRow(item);
-            const statusCell = row.getCell(3); // 'Statut Inventaire' column
-            if (item['Statut Inventaire'] === 'PRÉSENT') {
-                statusCell.font = { color: { argb: 'FF008000' }, bold: true }; // Green
-            } else {
-                statusCell.font = { color: { argb: 'FFFF0000' }, bold: true }; // Red
-            }
-        });
-
-        // 5. Add Footer Image & Signature
-        const footerStartRow = worksheet.lastRow ? worksheet.lastRow.number + 2 : 15;
-
-        const footerTextRow = worksheet.getRow(footerStartRow);
-        footerTextRow.values = ["Signature de l'Agent Responsable :", "", "", "Cachet de l'Hôpital :"];
-        footerTextRow.font = { italic: true, bold: true };
-
-        try {
-            const response = await fetch('/footer.png');
-            const buffer = await response.arrayBuffer();
-            const imageId = workbook.addImage({
-                buffer: buffer,
-                extension: 'png',
-            });
-            worksheet.addImage(imageId, {
-                tl: { col: 0, row: footerStartRow + 2 },
-                ext: { width: 500, height: 40 }
-            });
-        } catch (e) {
-            console.warn("Footer image not found for Excel", e);
-        }
-
-        const buffer = await workbook.xlsx.writeBuffer();
-        saveAs(new Blob([buffer]), `Rapport_Inventaire_Consolide_${inventaireInfo?.nom}.xlsx`);
-    };
-
     const handleGeneratePDF = async (type: 'scanned' | 'missing') => {
         const { jsPDF } = await import('jspdf');
         await import('jspdf-autotable');
 
-        // Helper to load image as base64
         const loadImageBase64 = async (url: string) => {
             try {
                 const response = await fetch(url);
@@ -229,50 +91,24 @@ const InventaireDetails: React.FC = () => {
                     reader.readAsDataURL(blob);
                 });
             } catch (e) {
-                console.warn(`Could not load image ${url}`, e);
                 return null;
             }
         };
 
         const baseUrl = import.meta.env.BASE_URL || '/';
-        const getFullUrl = (path: string) => {
-            // Remove leading slash if base url already has one
-            const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-            return `${baseUrl}${cleanPath}`;
-        };
-
-        const headerBase64 = await loadImageBase64(getFullUrl('header.png'));
-        const footerBase64 = await loadImageBase64(getFullUrl('footer.png'));
+        const headerBase64 = await loadImageBase64(`${baseUrl}header.png`);
+        const footerBase64 = await loadImageBase64(`${baseUrl}footer.png`);
 
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
 
-        const addFooterLogo = () => {
-            if (footerBase64) {
-                try {
-                    doc.addImage(footerBase64, 'PNG', 0, pageHeight - 20, pageWidth, 20);
-                } catch (e) {
-                    console.warn("Error adding footer image to PDF", e);
-                }
-            }
-        };
-
-        // Title & Info
         const reportTitle = type === 'scanned' ? "RAPPORT MATÉRIELS PRÉSENTS" : "RAPPORT MATÉRIELS MANQUANTS";
         doc.setFontSize(16);
         doc.text(reportTitle, pageWidth / 2, 45, { align: 'center' });
 
-        doc.setFontSize(11);
-        doc.text(inventaireInfo?.nom || '', pageWidth / 2, 52, { align: 'center' });
-
-        doc.setFontSize(8);
-        doc.text(`Date du rapport: ${new Date().toLocaleDateString()}`, 14, 62);
-        doc.text(`Période: Du ${new Date(inventaireInfo?.date_debut).toLocaleDateString()} au ${inventaireInfo?.date_fin ? new Date(inventaireInfo.date_fin).toLocaleDateString() : 'En cours'}`, 14, 67);
-        doc.text(`Statistiques: ${scannedItems.length} présents / ${missingItems.length} manquants (Total: ${scannedItems.length + missingItems.length})`, 14, 72);
-
         const tableData = type === 'scanned'
-            ? scannedItems.map((i: any) => [i.materiel?.nom || i.nom, i.materiel?.numero_inventaire || i.numero_inventaire, i.materiel?.service || '-', i.agent_name, new Date(i.created_at).toLocaleDateString()])
+            ? scannedItems.map((i: any) => [i.materiel?.nom, i.materiel?.numero_inventaire, i.materiel?.service || '-', i.agent_name, new Date(i.created_at).toLocaleDateString()])
             : missingItems.map((i: any) => [i.nom, i.numero_inventaire, i.service || '-']);
 
         const tableHead = type === 'scanned'
@@ -284,195 +120,173 @@ const InventaireDetails: React.FC = () => {
             head: tableHead,
             body: tableData,
             theme: 'striped',
-            styles: { fontSize: 8, cellPadding: 1 },
-            headStyles: { fillColor: type === 'scanned' ? [31, 73, 125] : [192, 0, 0], fontSize: 9 },
-            margin: { top: 35, bottom: 25 },
+            headStyles: { fillColor: type === 'scanned' ? [27, 54, 93] : [192, 0, 0] },
             didDrawPage: () => {
-                // Header on every page
-                if (headerBase64) {
-                    try {
-                        doc.addImage(headerBase64, 'PNG', 0, 0, pageWidth, 30);
-                    } catch (e) {
-                        console.warn("Error adding header image to PDF page", e);
-                    }
-                }
+                if (headerBase64) doc.addImage(headerBase64, 'PNG', 0, 0, pageWidth, 30);
+                if (footerBase64) doc.addImage(footerBase64, 'PNG', 0, pageHeight - 20, pageWidth, 20);
             }
         });
 
-        // Signatures area
-        const finalY = (doc as any).lastAutoTable.finalY + 15;
-        let sigY: number;
-
-        if (finalY > pageHeight - 40) {
-            doc.addPage();
-            if (headerBase64) {
-                try {
-                    doc.addImage(headerBase64, 'PNG', 0, 0, pageWidth, 30);
-                } catch (e) {
-                    console.warn("Error adding header image to final PDF page", e);
-                }
-            }
-            sigY = 50;
-        } else {
-            sigY = finalY;
-        }
-
-        doc.setFontSize(9);
-        doc.text("Signature de l'Agent Responsable", 14, sigY);
-        doc.text("Cachet de l'Hôpital", pageWidth - 60, sigY);
-        doc.line(14, sigY + 10, 70, sigY + 10);
-        doc.line(pageWidth - 60, sigY + 10, pageWidth - 14, sigY + 10);
-
-        addFooterLogo();
-
-        doc.save(`Rapport_${type === 'scanned' ? 'Presents' : 'Manquants'}_${inventaireInfo?.nom}.pdf`);
+        doc.save(`Rapport_${type}_${inventaireInfo?.nom}.pdf`);
     };
 
-    if (loading) return <div className="p-8 text-center">Chargement...</div>;
+    if (loading) return <div className="p-20 text-center font-black text-gst-dark tracking-widest animate-pulse">CHARGEMENT DES DONNÉES...</div>;
 
     const total = scannedItems.length + missingItems.length;
     const progress = total > 0 ? Math.round((scannedItems.length / total) * 100) : 0;
 
     return (
-        <div className="p-6 max-w-7xl mx-auto animate-fade-in">
-            <Link to="/inventaire" className="flex items-center text-gray-600 mb-4 hover:text-gray-900">
-                <ArrowLeft className="w-4 h-4 mr-2" /> Retour aux campagnes
+        <div className="max-w-7xl mx-auto animate-fade-in px-4">
+            <Link to="/inventaire" className="inline-flex items-center text-gray-400 mb-8 hover:text-gst-dark font-black tracking-widest text-[10px] uppercase bg-white px-4 py-2 rounded-full shadow-sm transition-all">
+                <ArrowLeft className="w-3 h-3 mr-2" /> Retour aux Campagnes
             </Link>
 
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <div className="flex justify-between items-start mb-4">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-800">{inventaireInfo?.nom}</h1>
-                        <p className="text-sm text-gray-500">
-                            Du {new Date(inventaireInfo?.date_debut).toLocaleDateString()}
-                            {inventaireInfo?.date_fin && ` au ${new Date(inventaireInfo.date_fin).toLocaleDateString()}`}
-                        </p>
+            <div className="bg-white rounded-[48px] shadow-2xl p-10 mb-10 border border-gray-100 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-gst-light/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+
+                <div className="flex flex-col md:flex-row justify-between items-start mb-10 gap-8 relative z-10">
+                    <div className="flex items-center gap-6">
+                        <div className="bg-gst-dark p-4 rounded-3xl text-white shadow-xl">
+                            <FileText size={32} />
+                        </div>
+                        <div>
+                            <h1 className="text-3xl font-black text-gst-dark uppercase tracking-tight">{inventaireInfo?.nom}</h1>
+                            <div className="flex items-center gap-4 mt-2">
+                                <span className="flex items-center text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                    <Calendar className="w-3 h-3 mr-2 text-gst-light" />
+                                    Initialisé le {new Date(inventaireInfo?.date_debut).toLocaleDateString()}
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <button
-                            onClick={handleExport}
-                            className="flex items-center justify-center bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition shadow-sm text-sm"
-                            title="Export complet Excel"
-                        >
-                            <Download className="w-4 h-4 mr-2" /> Excel
+
+                    <div className="flex flex-wrap gap-3">
+                        <button onClick={() => handleGeneratePDF('scanned')} className="bg-gst-dark text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gst-light transition-all flex items-center gap-2 shadow-lg shadow-gst-dark/10">
+                            <Download className="w-4 h-4" /> Rapport Présents
                         </button>
-                        <button
-                            onClick={() => handleGeneratePDF('scanned')}
-                            className="flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition shadow-sm text-sm"
-                        >
-                            <Download className="w-4 h-4 mr-2" /> PDF Présents
-                        </button>
-                        <button
-                            onClick={() => handleGeneratePDF('missing')}
-                            className="flex items-center justify-center bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition shadow-sm text-sm"
-                        >
-                            <Download className="w-4 h-4 mr-2" /> PDF Manquants
+                        <button onClick={() => handleGeneratePDF('missing')} className="bg-white text-red-600 border-2 border-red-50 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-50 transition-all flex items-center gap-2">
+                            <Download className="w-4 h-4" /> Rapport Manquants
                         </button>
                     </div>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="mb-2 flex justify-between text-sm font-medium">
-                    <span>Progression</span>
-                    <span>{progress}% ({scannedItems.length} / {total})</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-4 mb-6">
-                    <div
-                        className="bg-blue-600 h-4 rounded-full transition-all duration-500"
-                        style={{ width: `${progress}%` }}
-                    ></div>
+                {/* Statistics Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                    <div className="bg-slate-50 p-6 rounded-[32px] border border-gray-100">
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Progression Globale</span>
+                        <div className="flex items-end gap-3">
+                            <span className="text-4xl font-black text-gst-dark leading-none">{progress}%</span>
+                            <div className="flex-1 h-3 bg-gray-200 rounded-full mb-1 overflow-hidden">
+                                <div className="h-full bg-gst-light animate-shrink origin-left" style={{ width: `${progress}%` }}></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="bg-green-50/50 p-6 rounded-[32px] border border-green-100">
+                        <span className="text-[10px] font-black text-green-600/60 uppercase tracking-widest block mb-2">Articles Identifiés</span>
+                        <div className="flex items-center gap-4">
+                            <div className="bg-white p-2 rounded-xl text-green-600 shadow-sm"><CheckCircle size={20} /></div>
+                            <span className="text-3xl font-black text-green-700">{scannedItems.length}</span>
+                        </div>
+                    </div>
+                    <div className="bg-red-50/50 p-6 rounded-[32px] border border-red-100">
+                        <span className="text-[10px] font-black text-red-600/60 uppercase tracking-widest block mb-2">Articles Manquants</span>
+                        <div className="flex items-center gap-4">
+                            <div className="bg-white p-2 rounded-xl text-red-600 shadow-sm"><XCircle size={20} /></div>
+                            <span className="text-3xl font-black text-red-700">{missingItems.length}</span>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Tabs */}
-                <div className="flex border-b border-gray-200 mb-4">
+                {/* Tabs & Table */}
+                <div className="flex gap-4 mb-8">
                     <button
-                        className={`py-2 px-4 font-medium flex items-center ${activeTab === 'scanned' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
                         onClick={() => setActiveTab('scanned')}
+                        className={`flex-1 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-3 ${activeTab === 'scanned' ? 'bg-gst-dark text-white shadow-xl shadow-gst-dark/20' : 'bg-slate-50 text-gray-400 hover:bg-slate-100'}`}
                     >
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Présents ({scannedItems.length})
+                        <Database className="w-4 h-4" /> Base Recueillie
                     </button>
                     <button
-                        className={`py-2 px-4 font-medium flex items-center ${activeTab === 'missing' ? 'text-red-500 border-b-2 border-red-500' : 'text-gray-500 hover:text-gray-700'}`}
                         onClick={() => setActiveTab('missing')}
+                        className={`flex-1 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-3 ${activeTab === 'missing' ? 'bg-red-600 text-white shadow-xl shadow-red-200' : 'bg-slate-50 text-gray-400 hover:bg-slate-100'}`}
                     >
-                        <XCircle className="w-4 h-4 mr-2" />
-                        Manquants ({missingItems.length})
+                        <Users className="w-4 h-4" /> Manquants au Registre
                     </button>
                 </div>
 
-                {/* Content */}
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                <div className="overflow-x-auto rounded-[32px] border border-gray-50">
+                    <table className="w-full text-left">
+                        <thead className="bg-slate-50/50">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Matériel</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Service</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Matériel Clinique</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Affectation</th>
                                 {activeTab === 'scanned' && (
                                     <>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Scanné par</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Heure</th>
+                                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Opérateur</th>
+                                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Horodatage</th>
                                     </>
                                 )}
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="divide-y divide-gray-50">
                             {activeTab === 'scanned' ? (
                                 scannedItems.map(item => (
-                                    <tr key={item.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center">
-                                                {item.materiel.photo_url ? (
-                                                    <img
-                                                        src={item.materiel.photo_url.startsWith('http') ? item.materiel.photo_url : `https://hckfizhzvslhyxsaftnx.supabase.co/storage/v1/object/public/materiel-photos/${item.materiel.photo_url}`}
-                                                        className="h-10 w-10 rounded-full object-cover mr-3"
-                                                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/40?text=IMG'; }}
-                                                    />
-                                                ) : (
-                                                    <div className="h-10 w-10 rounded-full bg-gray-200 mr-3 flex items-center justify-center text-gray-500 text-xs">IMG</div>
-                                                )}
+                                    <tr key={item.id} className="hover:bg-slate-50 group transition-all">
+                                        <td className="px-8 py-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden flex-shrink-0">
+                                                    {item.materiel.photo_url ? (
+                                                        <img
+                                                            src={item.materiel.photo_url.startsWith('http') ? item.materiel.photo_url : `https://hckfizhzvslhyxsaftnx.supabase.co/storage/v1/object/public/materiel-photos/${item.materiel.photo_url}`}
+                                                            className="h-full w-full object-cover"
+                                                            alt=""
+                                                        />
+                                                    ) : (
+                                                        <div className="h-full w-full flex items-center justify-center text-[10px] font-black text-gray-200">IMG</div>
+                                                    )}
+                                                </div>
                                                 <div>
-                                                    <div className="font-medium text-gray-900">{item.materiel.nom}</div>
-                                                    <div className="text-xs text-gray-500 font-mono">{item.materiel.numero_inventaire}</div>
+                                                    <div className="font-black text-gst-dark uppercase text-xs tracking-tight">{item.materiel.nom}</div>
+                                                    <div className="text-[10px] font-mono text-gst-light font-black tracking-tighter">{item.materiel.numero_inventaire}</div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{item.materiel.service || '-'}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-900">{item.agent_name}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{new Date(item.created_at).toLocaleTimeString()}</td>
+                                        <td className="px-8 py-6 text-center text-[10px] font-black text-gray-500 uppercase tracking-widest">{item.materiel.service || 'Non spécifié'}</td>
+                                        <td className="px-8 py-6 text-center">
+                                            <span className="bg-gst-dark/5 text-gst-dark text-[10px] font-black px-3 py-1 rounded-full border border-gst-dark/10">{item.agent_name}</span>
+                                        </td>
+                                        <td className="px-8 py-6 text-right text-[10px] font-mono font-bold text-gray-400">{new Date(item.created_at).toLocaleTimeString()}</td>
                                     </tr>
                                 ))
                             ) : (
                                 missingItems.map(item => (
-                                    <tr key={item.id} className="hover:bg-red-50">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center">
-                                                {item.photo_url ? (
-                                                    <img
-                                                        src={item.photo_url.startsWith('http') ? item.photo_url : `https://hckfizhzvslhyxsaftnx.supabase.co/storage/v1/object/public/materiel-photos/${item.photo_url}`}
-                                                        className="h-10 w-10 rounded-full object-cover mr-3 grayscale"
-                                                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/40?text=IMG'; }}
-                                                    />
-                                                ) : (
-                                                    <div className="h-10 w-10 rounded-full bg-gray-200 mr-3 flex items-center justify-center text-gray-500 text-xs">IMG</div>
-                                                )}
+                                    <tr key={item.id} className="hover:bg-red-50 group transition-all">
+                                        <td className="px-8 py-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-2xl bg-white border border-red-50 shadow-sm overflow-hidden flex-shrink-0 grayscale opacity-50">
+                                                    {item.photo_url ? (
+                                                        <img
+                                                            src={item.photo_url.startsWith('http') ? item.photo_url : `https://hckfizhzvslhyxsaftnx.supabase.co/storage/v1/object/public/materiel-photos/${item.photo_url}`}
+                                                            className="h-full w-full object-cover"
+                                                            alt=""
+                                                        />
+                                                    ) : (
+                                                        <div className="h-full w-full flex items-center justify-center text-[10px] font-black text-gray-200">IMG</div>
+                                                    )}
+                                                </div>
                                                 <div>
-                                                    <div className="font-medium text-gray-900">{item.nom}</div>
-                                                    <div className="text-xs text-red-500 font-mono">{item.numero_inventaire}</div>
+                                                    <div className="font-black text-red-900 uppercase text-xs tracking-tight">{item.nom}</div>
+                                                    <div className="text-[10px] font-mono text-red-500 font-black tracking-tighter">{item.numero_inventaire}</div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{item.service || '-'}</td>
+                                        <td className="px-8 py-6 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">{item.service || 'Non spécifié'}</td>
                                     </tr>
                                 ))
                             )}
                         </tbody>
                     </table>
-                    {activeTab === 'scanned' && scannedItems.length === 0 && (
-                        <div className="p-8 text-center text-gray-500">Aucun élément scanné pour le moment.</div>
-                    )}
-                    {activeTab === 'missing' && missingItems.length === 0 && (
-                        <div className="p-8 text-center text-green-600 font-medium">Incroyable ! Aucun élément manquant.</div>
+                    {((activeTab === 'scanned' && scannedItems.length === 0) || (activeTab === 'missing' && missingItems.length === 0)) && (
+                        <div className="p-20 text-center text-gray-200 font-black uppercase tracking-[0.3em]">Aucune donnée disponible</div>
                     )}
                 </div>
             </div>

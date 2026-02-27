@@ -108,7 +108,7 @@ const MaterielList: React.FC = () => {
                       <div class="label-container">
                         <div class="header-section">
                             <div class="name">${materiel.nom}</div>
-                            <div class="subtitle">${materiel.marque || 'SANS MARQUE'}${materiel.adresse_ip ? ' - ' + materiel.adresse_ip : ''}</div>
+                            <div class="subtitle">${materiel.marque || 'SANS MARQUE'}${materiel.adresse_ip ? ' IP: ' + materiel.adresse_ip : ''}</div>
                         </div>
                         <div class="bottom-row">
                             <div class="col-left">
@@ -150,7 +150,7 @@ const MaterielList: React.FC = () => {
                             setEditingMateriel(null);
                             setShowForm(!showForm);
                         }}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all shadow-lg ${showForm && !editingMateriel ? 'bg-gray-100 text-gray-600' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200 hover:-translate-y-0.5'}`}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all shadow-lg ${showForm && !editingMateriel ? 'bg-gray-100 text-gray-600' : 'bg-gst-dark text-white hover:bg-gst-light shadow-gst-dark/20 hover:-translate-y-0.5'}`}
                     >
                         {showForm && !editingMateriel ? 'Fermer' : <><PlusCircle className="w-5 h-5" /> Ajouter un matériel</>}
                     </button>
@@ -159,7 +159,7 @@ const MaterielList: React.FC = () => {
 
             {showForm && role === 'admin' && (
                 <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 mb-8 animate-in slide-in-from-top duration-300">
-                    <h2 className="text-xl font-bold mb-6 text-gray-800 border-l-4 border-blue-600 pl-4">
+                    <h2 className="text-xl font-bold mb-6 text-gray-800 border-l-4 border-gst-light pl-4">
                         {editingMateriel ? `Modifier : ${editingMateriel.nom}` : 'Nouveau Matériel'}
                     </h2>
                     <MaterielForm
@@ -200,7 +200,7 @@ const MaterielList: React.FC = () => {
                                                 )}
                                             </div>
                                             <div>
-                                                <div className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{m.nom}</div>
+                                                <div className="font-bold text-gray-900 group-hover:text-gst-light transition-colors">{m.nom}</div>
                                                 <div className="text-xs text-gray-400">{m.marque || 'Sans marque'}</div>
                                             </div>
                                         </div>
@@ -224,7 +224,7 @@ const MaterielList: React.FC = () => {
                                         <div className="flex justify-center gap-1">
                                             <button
                                                 onClick={() => handlePrint(m)}
-                                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100"
+                                                className="p-2 text-gst-light hover:bg-gst-light/10 rounded-lg transition-colors border border-transparent hover:border-gst-light/20"
                                                 title="Imprimer Étiquette"
                                             >
                                                 <Printer className="w-4 h-4" />
