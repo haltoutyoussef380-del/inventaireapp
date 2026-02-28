@@ -97,7 +97,17 @@ const Login: React.FC = () => {
                         </form>
                     </div>
 
-                    <div className="bg-gray-50 p-6 border-t border-gray-100 flex items-center justify-center">
+                    <div className="bg-gray-50 p-6 border-t border-gray-100 flex flex-col items-center gap-4">
+                        <a
+                            href={`${import.meta.env.BASE_URL}inventaire-gst.apk`}
+                            download
+                            className="flex items-center gap-2 text-[11px] font-black text-gst-light hover:text-gst-dark transition-colors uppercase tracking-widest bg-white px-4 py-2 rounded-full border border-gst-light/20 shadow-sm"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Télécharger l'application Mobile (.APK)
+                        </a>
                         <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
                             Sécurisé par GST • 2026
                         </span>
