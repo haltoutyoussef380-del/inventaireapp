@@ -9,7 +9,7 @@ const StaffCardsPage: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
 
-    const [newMember, setNewMember] = useState({ full_name: '', matricule: '', fonction: '' });
+    const [newMember, setNewMember] = useState({ full_name: '', matricule: '', fonction: '', cnie: '' });
     const [msg, setMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const [editingMember, setEditingMember] = useState<any>(null);
     const [uploading, setUploading] = useState(false);
@@ -35,7 +35,7 @@ const StaffCardsPage: React.FC = () => {
         try {
             await staffService.create(newMember);
             setMsg({ type: 'success', text: 'Membre ajouté au personnel !' });
-            setNewMember({ full_name: '', matricule: '', fonction: '' });
+            setNewMember({ full_name: '', matricule: '', fonction: '', cnie: '' });
             setShowForm(false);
             loadStaff();
         } catch (error: any) {
@@ -50,7 +50,8 @@ const StaffCardsPage: React.FC = () => {
             await staffService.update(editingMember.id, {
                 full_name: editingMember.full_name,
                 matricule: editingMember.matricule,
-                fonction: editingMember.fonction
+                fonction: editingMember.fonction,
+                cnie: editingMember.cnie
             });
             setMsg({ type: 'success', text: 'Informations mises à jour !' });
             setEditingMember(null);
@@ -159,6 +160,14 @@ const StaffCardsPage: React.FC = () => {
                                 </div>
 
                                 <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-2">CNIE</label>
+                                    <input type="text"
+                                        className="w-full bg-slate-50 border-2 border-transparent focus:border-gst-light focus:bg-white p-5 rounded-[28px] transition-all outline-none font-bold text-gray-700"
+                                        placeholder="ex: AB123456"
+                                        value={newMember.cnie} onChange={e => setNewMember({ ...newMember, cnie: e.target.value })} />
+                                </div>
+
+                                <div className="space-y-2">
                                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-2">Fonction</label>
                                     <input type="text"
                                         className="w-full bg-slate-50 border-2 border-transparent focus:border-gst-light focus:bg-white p-5 rounded-[28px] transition-all outline-none font-bold text-gray-700"
@@ -259,6 +268,11 @@ const StaffCardsPage: React.FC = () => {
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-2">Matricule</label>
                                 <input type="text" className="w-full bg-slate-50 p-4 rounded-2xl font-bold text-gray-700 outline-none focus:bg-white border-2 border-transparent focus:border-gst-light transition-all"
                                     value={editingMember.matricule || ''} onChange={e => setEditingMember({ ...editingMember, matricule: e.target.value })} />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-2">CNIE</label>
+                                <input type="text" className="w-full bg-slate-50 p-4 rounded-2xl font-bold text-gray-700 outline-none focus:bg-white border-2 border-transparent focus:border-gst-light transition-all"
+                                    value={editingMember.cnie || ''} onChange={e => setEditingMember({ ...editingMember, cnie: e.target.value })} />
                             </div>
                             <div className="space-y-1">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-2">Fonction</label>

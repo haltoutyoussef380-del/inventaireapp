@@ -10,6 +10,7 @@ interface StaffIDCardProps {
         matricule?: string;
         fonction?: string;
         photo_url?: string;
+        cnie?: string;
     };
 }
 
@@ -59,87 +60,96 @@ const StaffIDCard: React.FC<StaffIDCardProps> = ({ agent }) => {
             }) as any;
 
             // --- RECTO (FRONT) ---
-            // Background Gradient Simulate
-            doc.setFillColor(245, 247, 250);
+            // Background White
+            doc.setFillColor(255, 255, 255);
             doc.rect(0, 0, cardWidth, cardHeight, 'F');
 
-            // Top Bar
-            doc.setFillColor(15, 23, 42); // gst-dark
-            doc.rect(0, 0, cardWidth, 8, 'F');
-
-            // Logo Small
-            if (logoBase64) {
-                doc.addImage(logoBase64, 'PNG', 4, 1.5, 12, 5);
+            // Header Banner (Top Recto)
+            if (headerBase64) {
+                doc.addImage(headerBase64, 'PNG', 0, 0, cardWidth, 12);
             }
 
-            doc.setFont('Helvetica', 'bold');
-            doc.setFontSize(8);
-            doc.setTextColor(255);
-            doc.text("CARTE PROFESSIONNELLE", cardWidth / 2, 5, { align: 'center' });
+            // Watermark Logo
+            if (logoBase64) {
+                doc.setGState(new (doc as any).GState({ opacity: 0.1 }));
+                doc.addImage(logoBase64, 'PNG', (cardWidth - 40) / 2, (cardHeight - 30) / 2 + 5, 40, 30);
+                doc.setGState(new (doc as any).GState({ opacity: 1.0 }));
+            }
 
             // Staff Photo
             if (agent.photo_url) {
                 try {
-                    doc.addImage(agent.photo_url, 'JPEG', 6, 12, 28, 35);
+                    doc.addImage(agent.photo_url, 'JPEG', 6, 15, 28, 33);
                 } catch (e) {
-                    doc.setFillColor(200);
-                    doc.rect(6, 12, 28, 35, 'F');
+                    doc.setFillColor(240);
+                    doc.rect(6, 15, 28, 33, 'F');
                 }
             } else {
-                doc.setFillColor(220, 225, 235);
-                doc.rect(6, 12, 28, 35, 'F');
-                doc.setTextColor(150);
+                doc.setFillColor(240, 242, 245);
+                doc.rect(6, 15, 28, 33, 'F');
+                doc.setTextColor(180);
                 doc.setFontSize(6);
-                doc.text("PHOTO", 20, 30, { align: 'center' });
+                doc.text("PHOTO", 20, 32, { align: 'center' });
             }
 
             // Details
-            doc.setTextColor(15, 23, 42);
+            doc.setTextColor(15, 23, 42); // gst-dark
+            doc.setFont('Helvetica', 'bold');
             doc.setFontSize(10);
             doc.text(agent.full_name?.toUpperCase() || agent.email.split('@')[0].toUpperCase(), 40, 22);
 
+            doc.setFont('Helvetica', 'normal');
             doc.setFontSize(7);
             doc.setTextColor(100);
             doc.text("FONCTION", 40, 28);
+            doc.setFont('Helvetica', 'bold');
             doc.setFontSize(8);
             doc.setTextColor(0);
-            doc.text(agent.fonction?.toUpperCase() || "AGENT GST", 40, 32);
+            doc.text(agent.fonction?.toUpperCase() || "PERSONNEL HOSPITALIER", 40, 32);
 
+            doc.setFont('Helvetica', 'normal');
             doc.setFontSize(7);
             doc.setTextColor(100);
             doc.text("MATRICULE", 40, 38);
             doc.setFontSize(9);
             doc.setTextColor(15, 23, 42);
-            doc.text(agent.matricule || "NON ASSIGNÉ", 40, 42);
+            doc.text(agent.matricule || "########", 40, 42);
+
+            // CNIE
+            doc.setFont('Helvetica', 'normal');
+            doc.setFontSize(7);
+            doc.setTextColor(100);
+            doc.text("CNIE", 40, 47);
+            doc.setFontSize(9);
+            doc.setTextColor(15, 23, 42);
+            doc.text(agent.cnie || "N/A", 40, 51);
 
             // --- VERSO (BACK) ---
             doc.addPage([cardWidth, cardHeight], 'l');
 
-            // Header Banner
-            if (headerBase64) {
-                doc.addImage(headerBase64, 'PNG', 0, 0, cardWidth, 12);
-            } else {
-                doc.setFillColor(15, 23, 42);
-                doc.rect(0, 0, cardWidth, 12, 'F');
+            // Watermark Logo (Back)
+            if (logoBase64) {
+                doc.setGState(new (doc as any).GState({ opacity: 0.1 }));
+                doc.addImage(logoBase64, 'PNG', (cardWidth - 50) / 2, (cardHeight - 40) / 2, 50, 40);
+                doc.setGState(new (doc as any).GState({ opacity: 1.0 }));
             }
 
-            doc.setFontSize(6);
+            doc.setFontSize(7);
             doc.setTextColor(50);
+            doc.setFont('Helvetica', 'bold');
+            doc.text("INSTRUCTIONS", cardWidth / 2, 15, { align: 'center' });
+
+            doc.setFont('Helvetica', 'normal');
+            doc.setFontSize(6.5);
             const instructions = [
                 "Cette carte est strictement personnelle et incessible.",
                 "En cas de perte, merci de prévenir immédiatement l'administration.",
-                "Ce badge doit être porté de manière visible dans l'établissement."
+                "Ce badge doit être porté de manière visible dans l'établissement.",
+                "Système de Gestion GST-INVENTAIRE."
             ];
             instructions.forEach((line, i) => {
-                doc.text(line, cardWidth / 2, 25 + (i * 4), { align: 'center' });
+                doc.text(line, cardWidth / 2, 25 + (i * 5), { align: 'center' });
             });
-
-            // Small watermark logo
-            if (logoBase64) {
-                doc.setGState(new (doc as any).GState({ opacity: 0.1 }));
-                doc.addImage(logoBase64, 'PNG', cardWidth - 25, cardHeight - 20, 20, 15);
-                doc.setGState(new (doc as any).GState({ opacity: 1.0 }));
-            }
 
             doc.save(`badge-${agent.email.split('@')[0]}.pdf`);
             return;
@@ -159,107 +169,125 @@ const StaffIDCard: React.FC<StaffIDCardProps> = ({ agent }) => {
             document.body.appendChild(iframe);
         }
 
-        const doc = iframe.contentWindow?.document || iframe.contentDocument;
-        if (!doc) return;
+        const win = iframe.contentWindow;
+        if (!win) return;
+        const doc = win.document;
 
         doc.write(`
       <html>
         <head>
           <style>
-            @page { size: 86mm 54mm; margin: 0; }
-            body { margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: #fff; }
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+            @page { size: 85.6mm 53.98mm; margin: 0; }
+            body { margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; background: #fff; }
             .card {
               width: 85.6mm;
-              height: 54mm;
+              height: 53.98mm;
               position: relative;
               overflow: hidden;
-              background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-              border: 0.1mm solid #e2e8f0;
+              background: white;
+              border: 0.1mm solid #eee;
               box-sizing: border-box;
               page-break-after: always;
             }
-            .card-back {
-                background: white;
+            .watermark {
+              position: absolute;
+              left: 50%;
+              top: 55%;
+              transform: translate(-50%, -50%);
+              width: 45mm;
+              opacity: 0.08;
+              z-index: 0;
             }
-            .top-banner {
-              height: 8mm;
-              background: #0f172a;
-              color: white;
-              display: flex;
-              align-items: center;
-              padding: 0 4mm;
-              box-sizing: border-box;
+            .recto-header {
+              width: 100%;
+              height: 12mm;
+              object-fit: cover;
+              border-bottom: 0.2mm solid #f1f5f9;
             }
-            .logo-header { height: 5mm; }
-            .badge-title { margin-left: auto; font-size: 7pt; font-weight: 900; letter-spacing: 0.5mm; }
-            
             .photo-box {
               position: absolute;
               left: 6mm;
-              top: 12mm;
+              top: 15mm;
               width: 28mm;
-              height: 35mm;
-              background: #cbd5e1;
-              border-radius: 2mm;
+              height: 33mm;
+              background: #f8fafc;
+              border-radius: 1.5mm;
               overflow: hidden;
-              box-shadow: 0 1mm 2mm rgba(0,0,0,0.1);
+              box-shadow: 0 1mm 3mm rgba(0,0,0,0.05);
+              z-index: 10;
+              border: 0.2mm solid #e2e8f0;
             }
             .photo-box img { width: 100%; height: 100%; object-fit: cover; }
             
             .info-box {
               position: absolute;
-              left: 40mm;
-              top: 15mm;
+              left: 38mm;
+              top: 16mm;
               right: 4mm;
+              z-index: 10;
             }
-            .name { font-size: 11pt; font-weight: 900; color: #0f172a; margin-bottom: 3mm; line-height: 1.2; }
-            .label { font-size: 6pt; font-weight: 900; color: #64748b; margin-top: 2mm; text-transform: uppercase; }
-            .value { font-size: 8pt; font-weight: 700; color: #1e293b; }
-            .matricule { font-size: 10pt; font-family: monospace; }
-            
-            .back-header { width: 100%; height: 12mm; object-fit: cover; }
+            .name { font-size: 10.5pt; font-weight: 900; color: #0f172a; margin-bottom: 2mm; line-height: 1.1; text-transform: uppercase; }
+            .field { margin-top: 1.5mm; }
+            .label { font-size: 6pt; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.2mm; }
+            .value { font-size: 8pt; font-weight: 800; color: #334155; text-transform: uppercase; }
+            .cnie-box { margin-top: 2mm; padding-top: 1.5mm; border-top: 0.1mm dashed #e2e8f0; }
+
+            .card-back { background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+            .back-title { font-size: 9pt; font-weight: 900; color: #0f172a; margin-bottom: 4mm; }
             .instructions {
-                margin: 6mm 4mm;
                 font-size: 6.5pt;
                 color: #475569;
                 text-align: center;
-                line-height: 1.6;
+                line-height: 1.8;
+                padding: 0 8mm;
             }
-            .footer-logo {
-                position: absolute;
-                bottom: 4mm;
-                right: 4mm;
-                opacity: 0.2;
-                height: 10mm;
+            .footer-note {
+               position: absolute;
+               bottom: 4mm;
+               font-size: 5pt;
+               font-weight: 700;
+               color: #cbd5e1;
+               text-transform: uppercase;
+               letter-spacing: 1mm;
             }
           </style>
         </head>
         <body>
           <div class="card">
-            <div class="top-banner">
-              <img src="${logoBase64}" class="logo-header" />
-              <span class="badge-title">CARTE PROFESSIONNELLE</span>
-            </div>
+            <img src="${headerBase64}" class="recto-header" />
+            <img src="${logoBase64}" class="watermark" />
             <div class="photo-box">
               ${agent.photo_url ? `<img src="${agent.photo_url}" />` : ''}
             </div>
             <div class="info-box">
               <div class="name">${agent.full_name || agent.email.split('@')[0]}</div>
-              <div class="label">Fonction</div>
-              <div class="value">${agent.fonction || 'Personnel Hospitalier'}</div>
-              <div class="label">Matricule</div>
-              <div class="value matricule">${agent.matricule || '########'}</div>
+              <div class="field">
+                <div class="label">Fonction</div>
+                <div class="value">${agent.fonction || 'Personnel Hospitalier'}</div>
+              </div>
+              <div class="field">
+                <div class="label">Matricule</div>
+                <div class="value">${agent.matricule || '########'}</div>
+              </div>
+              <div class="field cnie-box">
+                <span class="label">CNIE :</span>
+                <span class="value">${agent.cnie || 'N/A'}</span>
+              </div>
             </div>
           </div>
+
           <div class="card card-back">
-            <img src="${headerBase64}" class="back-header" />
+            <img src="${logoBase64}" class="watermark" style="width: 55mm; opacity: 0.1;" />
+            <div class="back-title">INSTRUCTIONS</div>
             <div class="instructions">
                 Cette carte est strictement personnelle et incessible.<br/>
-                En cas de perte, merci de prévenir l'administration de l'Hôpital.<br/>
-                Ce badge doit être porté de manière visible dans l'enceinte de l'établissement.<br/>
-                Système GST-INVENTAIRE.
+                En cas de perte, merci de prévenir l'administration.<br/>
+                Ce badge doit être porté de manière visible.<br/>
+                Espace sécurisé - Hôpital Mohammed VI.<br/>
+                Logiciel de Gestion GST v2.0
             </div>
-            <img src="${logoBase64}" class="footer-logo" />
+            <div class="footer-note">GST-INVENTAIRE</div>
           </div>
         </body>
       </html>
@@ -267,8 +295,8 @@ const StaffIDCard: React.FC<StaffIDCardProps> = ({ agent }) => {
         doc.close();
 
         setTimeout(() => {
-            iframe.contentWindow?.focus();
-            iframe.contentWindow?.print();
+            win.focus();
+            win.print();
         }, 500);
     };
 

@@ -304,7 +304,7 @@ export const staffService = {
         return data;
     },
 
-    create: async (staff: { full_name: string; matricule: string; fonction: string; photo_url?: string }) => {
+    create: async (staff: { full_name: string; matricule: string; fonction: string; cnie?: string; photo_url?: string }) => {
         const { data, error } = await supabase
             .from('staff_members')
             .insert([staff])
@@ -314,7 +314,7 @@ export const staffService = {
         return data;
     },
 
-    update: async (id: string, staff: Partial<{ full_name: string; matricule: string; fonction: string; photo_url: string }>) => {
+    update: async (id: string, staff: Partial<{ full_name: string; matricule: string; fonction: string; cnie: string; photo_url: string }>) => {
         const { data, error } = await supabase
             .from('staff_members')
             .update(staff)

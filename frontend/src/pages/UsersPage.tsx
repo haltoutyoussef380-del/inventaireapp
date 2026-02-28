@@ -11,7 +11,7 @@ const UsersPage: React.FC = () => {
     const [newUser, setNewUser] = useState({ email: '', password: '', name: '' });
     const [msg, setMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const [editingAgent, setEditingAgent] = useState<any>(null);
-    const [profileForm, setProfileForm] = useState({ matricule: '', fonction: '' });
+    const [profileForm, setProfileForm] = useState({ matricule: '', fonction: '', cnie: '', photo_url: '' });
     const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
@@ -211,7 +211,12 @@ const UsersPage: React.FC = () => {
                                                     <button
                                                         onClick={() => {
                                                             setEditingAgent(agent);
-                                                            setProfileForm({ matricule: agent.matricule || '', fonction: agent.fonction || '' });
+                                                            setProfileForm({
+                                                                matricule: agent.matricule || '',
+                                                                fonction: agent.fonction || '',
+                                                                cnie: agent.cnie || '',
+                                                                photo_url: agent.photo_url || ''
+                                                            });
                                                         }}
                                                         className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
                                                         title="Modifier Profil"
@@ -271,6 +276,12 @@ const UsersPage: React.FC = () => {
                                 <input type="text" className="w-full bg-slate-50 p-4 rounded-2xl font-bold text-gray-700 outline-none focus:bg-white border-2 border-transparent focus:border-gst-light transition-all"
                                     placeholder="ex: GST-2025-001"
                                     value={profileForm.matricule} onChange={e => setProfileForm({ ...profileForm, matricule: e.target.value })} />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-2">CNIE</label>
+                                <input type="text" className="w-full bg-slate-50 p-4 rounded-2xl font-bold text-gray-700 outline-none focus:bg-white border-2 border-transparent focus:border-gst-light transition-all"
+                                    placeholder="ex: AB123456"
+                                    value={profileForm.cnie} onChange={e => setProfileForm({ ...profileForm, cnie: e.target.value })} />
                             </div>
                             <div className="space-y-1">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-2">Fonction / Titre</label>
