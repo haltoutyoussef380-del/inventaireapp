@@ -270,8 +270,7 @@ export const userService = {
     updateProfile: async (id: string, profile: { matricule?: string; fonction?: string; photo_url?: string }) => {
         const { data, error } = await supabase
             .from('profiles')
-            .update(profile)
-            .eq('id', id)
+            .upsert({ id, ...profile })
             .select()
             .single();
 

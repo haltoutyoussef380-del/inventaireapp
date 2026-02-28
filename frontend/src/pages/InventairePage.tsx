@@ -184,7 +184,7 @@ const InventairePage: React.FC = () => {
                                 </div>
 
                                 <div className="mb-6">
-                                    <span className="text-[10px] font-black text-gst-light uppercase tracking-[0.2em]">CHU Mohammed VI</span>
+                                    <span className="text-[10px] font-black text-gst-light uppercase tracking-[0.2em]">Hôpital Universitaire Psychiatrique Mohammed VI</span>
                                     <h3 className="text-2xl font-black mt-1 text-gst-dark group-hover:text-gst-light transition-colors uppercase tracking-tight">{camp.nom}</h3>
                                 </div>
 
@@ -245,7 +245,7 @@ const InventairePage: React.FC = () => {
                                 <input type="text" required
                                     className="w-full bg-slate-50 border-2 border-transparent focus:border-gst-light focus:bg-white p-5 pl-14 rounded-[28px] transition-all outline-none font-black text-gst-dark"
                                     value={newInv.nom} onChange={e => setNewInv({ ...newInv, nom: e.target.value })}
-                                    placeholder="ex: CHU - INVENTAIRE ANNUEL 2026" />
+                                    placeholder="ex: GST - INVENTAIRE ANNUEL 2026" />
                             </div>
                         </div>
 

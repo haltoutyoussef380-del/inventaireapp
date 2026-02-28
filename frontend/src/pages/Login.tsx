@@ -42,7 +42,7 @@ const Login: React.FC = () => {
                             Gestion d'Inventaire
                         </h1>
                         <p className="text-blue-200 text-xs font-bold mt-2 uppercase tracking-widest">
-                            CHU Mohammed VI Psychiatrie
+                            L'Hôpital Universitaire Psychiatrique Mohammed VI
                         </p>
                     </div>
 
@@ -57,7 +57,7 @@ const Login: React.FC = () => {
                                     <input
                                         type="email"
                                         className="w-full bg-gray-50 border-2 border-transparent focus:border-gst-light focus:bg-white p-4 pl-12 rounded-2xl transition-all outline-none font-bold text-gray-700"
-                                        placeholder="votre@chu.ma"
+                                        placeholder="votre@gst.ma"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required

@@ -82,7 +82,7 @@ const UsersPage: React.FC = () => {
                     </div>
                     <div>
                         <h1 className="text-3xl font-black text-gst-dark uppercase tracking-tight">Personnel & Accès</h1>
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mt-1">Gestion des habilitations CHU</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 mt-1">Gestion des habilitations GST</p>
                     </div>
                 </div>
 
@@ -130,7 +130,7 @@ const UsersPage: React.FC = () => {
                                         <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 w-5 h-5" />
                                         <input type="email" required
                                             className="w-full bg-slate-50 border-2 border-transparent focus:border-gst-light focus:bg-white p-5 pl-14 rounded-[28px] transition-all outline-none font-bold text-gray-700"
-                                            placeholder="agent@chu.ma"
+                                            placeholder="agent@gst.ma"
                                             value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} />
                                     </div>
                                 </div>
@@ -190,7 +190,7 @@ const UsersPage: React.FC = () => {
                                                     </div>
                                                     <div>
                                                         <div className="font-black text-gst-dark tracking-tight uppercase text-sm">{agent.email}</div>
-                                                        <div className="text-[9px] text-gray-400 font-bold uppercase tracking-[0.2em]">Membre CHU</div>
+                                                        <div className="text-[9px] text-gray-400 font-bold uppercase tracking-[0.2em]">Membre GST</div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -269,7 +269,7 @@ const UsersPage: React.FC = () => {
                             <div className="space-y-1">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-2">Matricule</label>
                                 <input type="text" className="w-full bg-slate-50 p-4 rounded-2xl font-bold text-gray-700 outline-none focus:bg-white border-2 border-transparent focus:border-gst-light transition-all"
-                                    placeholder="ex: CHU-2025-001"
+                                    placeholder="ex: GST-2025-001"
                                     value={profileForm.matricule} onChange={e => setProfileForm({ ...profileForm, matricule: e.target.value })} />
                             </div>
                             <div className="space-y-1">

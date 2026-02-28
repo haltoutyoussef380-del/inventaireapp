@@ -103,7 +103,7 @@ const StaffIDCard: React.FC<StaffIDCardProps> = ({ agent }) => {
             doc.text("FONCTION", 40, 28);
             doc.setFontSize(8);
             doc.setTextColor(0);
-            doc.text(agent.fonction?.toUpperCase() || "AGENT CHU", 40, 32);
+            doc.text(agent.fonction?.toUpperCase() || "AGENT GST", 40, 32);
 
             doc.setFontSize(7);
             doc.setTextColor(100);
@@ -255,7 +255,7 @@ const StaffIDCard: React.FC<StaffIDCardProps> = ({ agent }) => {
             <img src="${headerBase64}" class="back-header" />
             <div class="instructions">
                 Cette carte est strictement personnelle et incessible.<br/>
-                En cas de perte, merci de prévenir l'administration du CHU.<br/>
+                En cas de perte, merci de prévenir l'administration de l'Hôpital.<br/>
                 Ce badge doit être porté de manière visible dans l'enceinte de l'établissement.<br/>
                 Système GST-INVENTAIRE.
             </div>
