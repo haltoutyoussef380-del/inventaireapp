@@ -120,10 +120,10 @@ const StaffIDCard: React.FC<StaffIDCardProps> = ({ agent, customInstructions }) 
       doc.setFont('Helvetica', 'normal');
       doc.setFontSize(7);
       doc.setTextColor(100);
-      doc.text("CNIE", 40, 47);
+      doc.text("CNIE", 40, 48);
       doc.setFontSize(9);
       doc.setTextColor(15, 23, 42);
-      doc.text(agent.cnie || "N/A", 40, 51);
+      doc.text(agent.cnie || "N/A", 40, 52);
 
       // --- VERSO (BACK) ---
       doc.addPage([cardWidth, cardHeight], 'l');
@@ -232,7 +232,7 @@ const StaffIDCard: React.FC<StaffIDCardProps> = ({ agent, customInstructions }) 
             .field { margin-top: 1.5mm; }
             .label { font-size: 6pt; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.2mm; }
             .value { font-size: 8pt; font-weight: 800; color: #334155; text-transform: uppercase; }
-            .cnie-box { margin-top: 2mm; padding-top: 1.5mm; border-top: 0.1mm dashed #e2e8f0; }
+            .cnie-box { margin-top: 1.5mm; }
 
             .card-back { background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; }
             .back-title { font-size: 9pt; font-weight: 900; color: #0f172a; margin-bottom: 4mm; }
@@ -272,8 +272,8 @@ const StaffIDCard: React.FC<StaffIDCardProps> = ({ agent, customInstructions }) 
                 <div class="value">${agent.matricule || '########'}</div>
               </div>
               <div class="field cnie-box">
-                <span class="label">CNIE :</span>
-                <span class="value">${agent.cnie || 'N/A'}</span>
+                <div class="label">CNIE</div>
+                <div class="value">${agent.cnie || 'N/A'}</div>
               </div>
             </div>
           </div>
