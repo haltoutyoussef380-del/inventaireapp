@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, ClipboardList, Menu, Users, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Package, ClipboardList, Menu, Users, Settings, LogOut, Contact } from 'lucide-react';
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
 
@@ -17,6 +17,7 @@ const Layout: React.FC = () => {
 
     const adminItems = [
         { path: '/users', label: 'Agents', icon: Users },
+        { path: '/staff-cards', label: 'Cartes Pro', icon: Contact },
         { path: '/printer-config', label: 'Config Imprimante', icon: Settings },
     ];
 

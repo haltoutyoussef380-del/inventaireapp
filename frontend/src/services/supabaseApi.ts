@@ -293,3 +293,43 @@ export const userService = {
         return data.publicUrl;
     }
 };
+
+export const staffService = {
+    getAll: async () => {
+        const { data, error } = await supabase
+            .from('staff_members')
+            .select('*')
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        return data;
+    },
+
+    create: async (staff: { full_name: string; matricule: string; fonction: string; photo_url?: string }) => {
+        const { data, error } = await supabase
+            .from('staff_members')
+            .insert([staff])
+            .select()
+            .single();
+        if (error) throw error;
+        return data;
+    },
+
+    update: async (id: string, staff: Partial<{ full_name: string; matricule: string; fonction: string; photo_url: string }>) => {
+        const { data, error } = await supabase
+            .from('staff_members')
+            .update(staff)
+            .eq('id', id)
+            .select()
+            .single();
+        if (error) throw error;
+        return data;
+    },
+
+    delete: async (id: string) => {
+        const { error } = await supabase
+            .from('staff_members')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
+    }
+};
