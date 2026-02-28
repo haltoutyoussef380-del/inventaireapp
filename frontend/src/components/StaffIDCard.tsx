@@ -72,7 +72,7 @@ const StaffIDCard: React.FC<StaffIDCardProps> = ({ agent, customInstructions }) 
 
       // Watermark Logo
       if (logoBase64) {
-        doc.setGState(new (doc as any).GState({ opacity: 0.1 }));
+        doc.setGState(new (doc as any).GState({ opacity: 0.25 }));
         doc.addImage(logoBase64, 'PNG', (cardWidth - 40) / 2, (cardHeight - 30) / 2 + 5, 40, 30);
         doc.setGState(new (doc as any).GState({ opacity: 1.0 }));
       }
@@ -130,7 +130,7 @@ const StaffIDCard: React.FC<StaffIDCardProps> = ({ agent, customInstructions }) 
 
       // Watermark Logo (Back)
       if (logoBase64) {
-        doc.setGState(new (doc as any).GState({ opacity: 0.1 }));
+        doc.setGState(new (doc as any).GState({ opacity: 0.25 }));
         doc.addImage(logoBase64, 'PNG', (cardWidth - 50) / 2, (cardHeight - 40) / 2, 50, 40);
         doc.setGState(new (doc as any).GState({ opacity: 1.0 }));
       }
@@ -197,7 +197,7 @@ const StaffIDCard: React.FC<StaffIDCardProps> = ({ agent, customInstructions }) 
               top: 55%;
               transform: translate(-50%, -50%);
               width: 45mm;
-              opacity: 0.08;
+              opacity: 0.25;
               z-index: 0;
             }
             .recto-header {
@@ -272,7 +272,7 @@ const StaffIDCard: React.FC<StaffIDCardProps> = ({ agent, customInstructions }) 
           </div>
 
           <div class="card card-back">
-            <img src="${logoBase64}" class="watermark" style="width: 55mm; opacity: 0.1;" />
+            <img src="${logoBase64}" class="watermark" style="width: 55mm; opacity: 0.25;" />
             <div class="back-title">INSTRUCTIONS</div>
             <div class="instructions">
                 ${customInstructions ? customInstructions.replace(/\n/g, '<br/>') : `
