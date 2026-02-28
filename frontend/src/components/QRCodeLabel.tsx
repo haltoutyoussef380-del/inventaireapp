@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Printer } from 'lucide-react';
 import { jsPDF } from 'jspdf';
-import { QRCodeCanvas } from 'qrcode.react';
+import { QRCodeCanvas, QRCodeSVG } from 'qrcode.react';
 
 interface QRCodeLabelProps {
   materiel: {
@@ -51,7 +51,8 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
       logoWidth: 28
     };
 
-    const isMobile = window.location.protocol === 'capacitor:';
+    // @ts-ignore
+    const isMobile = !!window.Capacitor?.isNative || window.location.protocol === 'capacitor:';
 
     if (isMobile) {
       // Mobile approach: Generate PDF using jsPDF
@@ -82,7 +83,7 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
       doc.text(materiel.marque || 'SANS MARQUE', 2, 9);
 
       // QR Code
-      const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+      const canvas = document.querySelector(`#qr-canvas-${materiel.id}`) as HTMLCanvasElement;
       if (canvas) {
         const qrDataUrl = canvas.toDataURL('image/png');
         const qrSize = s.height * 0.6;
@@ -260,7 +261,10 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
       <div style={{ display: 'none' }}>
         <div ref={printRef} className="label-container">
           <div className="qr-code">
-            <QRCodeCanvas value={materiel.numero_inventaire} size={256} />
+            <QRCodeSVG value={materiel.numero_inventaire} size={256} />
+            <div style={{ display: 'none' }}>
+              <QRCodeCanvas id={`qr-canvas-${materiel.id}`} value={materiel.numero_inventaire} size={256} />
+            </div>
           </div>
           <div className="info">
             <span className="title">{materiel.nom.substring(0, 20)}</span>

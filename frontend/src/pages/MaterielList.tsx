@@ -3,7 +3,7 @@ import { materielService } from '../services/supabaseApi';
 import MaterielForm from '../components/MaterielForm';
 import { Printer, Edit2, Trash2, PlusCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { QRCodeCanvas } from 'qrcode.react';
+import { QRCodeCanvas, QRCodeSVG } from 'qrcode.react';
 import { jsPDF } from 'jspdf';
 
 const MaterielList: React.FC = () => {
@@ -70,7 +70,8 @@ const MaterielList: React.FC = () => {
         const stored = localStorage.getItem('zebra_printer_settings');
         const s = stored ? JSON.parse(stored) : { width: 50, height: 25, marginLeft: 0, marginTop: 0, fontSize: 9, logoWidth: 15 };
 
-        const isMobile = window.location.protocol === 'capacitor:';
+        // @ts-ignore
+        const isMobile = !!window.Capacitor?.isNative || window.location.protocol === 'capacitor:';
 
         if (isMobile) {
             const doc = new jsPDF({
@@ -100,7 +101,7 @@ const MaterielList: React.FC = () => {
             doc.text(`${materiel.marque || 'SANS MARQUE'}${materiel.adresse_ip ? ' IP: ' + materiel.adresse_ip : ''}`, 2, 9);
 
             // QR Code
-            const canvas = document.querySelector(`#qr-code-hidden-${materiel.id} canvas`) as HTMLCanvasElement;
+            const canvas = document.querySelector(`#qr-canvas-hidden-${materiel.id}`) as HTMLCanvasElement;
             if (canvas) {
                 const qrDataUrl = canvas.toDataURL('image/png');
                 const qrSize = s.qrSize || (s.height * 0.7);
@@ -196,7 +197,8 @@ const MaterielList: React.FC = () => {
             <div style={{ display: 'none' }}>
                 {materiels.map((m: any) => (
                     <div key={m.id} id={`qr-code-hidden-${m.id}`}>
-                        <QRCodeCanvas value={m.numero_inventaire} size={256} />
+                        <QRCodeSVG value={m.numero_inventaire} size={256} />
+                        <QRCodeCanvas id={`qr-canvas-hidden-${m.id}`} value={m.numero_inventaire} size={256} style={{ display: 'none' }} />
                     </div>
                 ))}
             </div>
