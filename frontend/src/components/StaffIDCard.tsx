@@ -67,7 +67,7 @@ const StaffIDCard: React.FC<StaffIDCardProps> = ({ agent, customInstructions }) 
 
       // Header Banner (Top Recto)
       if (headerBase64) {
-        doc.addImage(headerBase64, 'PNG', 0, 0, cardWidth, 12);
+        doc.addImage(headerBase64, 'PNG', 0, 0, cardWidth, 16);
       }
 
       // Watermark Logo
@@ -80,50 +80,50 @@ const StaffIDCard: React.FC<StaffIDCardProps> = ({ agent, customInstructions }) 
       // Staff Photo
       if (agent.photo_url) {
         try {
-          doc.addImage(agent.photo_url, 'JPEG', 6, 15, 28, 33);
+          doc.addImage(agent.photo_url, 'JPEG', 6, 18, 28, 33);
         } catch (e) {
           doc.setFillColor(240);
-          doc.rect(6, 15, 28, 33, 'F');
+          doc.rect(6, 18, 28, 33, 'F');
         }
       } else {
         doc.setFillColor(240, 242, 245);
-        doc.rect(6, 15, 28, 33, 'F');
+        doc.rect(6, 18, 28, 33, 'F');
         doc.setTextColor(180);
         doc.setFontSize(6);
-        doc.text("PHOTO", 20, 32, { align: 'center' });
+        doc.text("PHOTO", 20, 35, { align: 'center' });
       }
 
       // Details
       doc.setTextColor(15, 23, 42); // gst-dark
       doc.setFont('Helvetica', 'bold');
       doc.setFontSize(10);
-      doc.text(agent.full_name?.toUpperCase() || agent.email.split('@')[0].toUpperCase(), 40, 22);
+      doc.text(agent.full_name?.toUpperCase() || agent.email.split('@')[0].toUpperCase(), 40, 24);
 
       doc.setFont('Helvetica', 'normal');
       doc.setFontSize(7);
       doc.setTextColor(100);
-      doc.text("FONCTION", 40, 28);
+      doc.text("FONCTION", 40, 30);
       doc.setFont('Helvetica', 'bold');
       doc.setFontSize(8);
       doc.setTextColor(0);
-      doc.text(agent.fonction?.toUpperCase() || "PERSONNEL HOSPITALIER", 40, 32);
+      doc.text(agent.fonction?.toUpperCase() || "PERSONNEL HOSPITALIER", 40, 34);
 
       doc.setFont('Helvetica', 'normal');
       doc.setFontSize(7);
       doc.setTextColor(100);
-      doc.text("MATRICULE", 40, 38);
+      doc.text("MATRICULE", 40, 40);
       doc.setFontSize(9);
       doc.setTextColor(15, 23, 42);
-      doc.text(agent.matricule || "########", 40, 42);
+      doc.text(agent.matricule || "########", 40, 44);
 
       // CNIE
       doc.setFont('Helvetica', 'normal');
       doc.setFontSize(7);
       doc.setTextColor(100);
-      doc.text("CNIE", 40, 48);
+      doc.text("CNIE", 40, 49);
       doc.setFontSize(9);
       doc.setTextColor(15, 23, 42);
-      doc.text(agent.cnie || "N/A", 40, 52);
+      doc.text(agent.cnie || "N/A", 40, 53);
 
       // --- VERSO (BACK) ---
       doc.addPage([cardWidth, cardHeight], 'l');
@@ -202,14 +202,16 @@ const StaffIDCard: React.FC<StaffIDCardProps> = ({ agent, customInstructions }) 
             }
             .recto-header {
               width: 100%;
-              height: 12mm;
-              object-fit: cover;
+              height: 16mm;
+              object-fit: contain;
+              padding: 1mm 2mm;
+              box-sizing: border-box;
               border-bottom: 0.2mm solid #f1f5f9;
             }
             .photo-box {
               position: absolute;
               left: 6mm;
-              top: 15mm;
+              top: 18mm;
               width: 28mm;
               height: 33mm;
               background: #f8fafc;
@@ -224,7 +226,7 @@ const StaffIDCard: React.FC<StaffIDCardProps> = ({ agent, customInstructions }) 
             .info-box {
               position: absolute;
               left: 38mm;
-              top: 16mm;
+              top: 18mm;
               right: 4mm;
               z-index: 10;
             }
@@ -242,15 +244,6 @@ const StaffIDCard: React.FC<StaffIDCardProps> = ({ agent, customInstructions }) 
                 text-align: center;
                 line-height: 1.8;
                 padding: 0 8mm;
-            }
-            .footer-note {
-               position: absolute;
-               bottom: 4mm;
-               font-size: 5pt;
-               font-weight: 700;
-               color: #cbd5e1;
-               text-transform: uppercase;
-               letter-spacing: 1mm;
             }
           </style>
         </head>
@@ -286,11 +279,9 @@ const StaffIDCard: React.FC<StaffIDCardProps> = ({ agent, customInstructions }) 
                 Cette carte est strictement personnelle et incessible.<br/>
                 En cas de perte, merci de prévenir l'administration.<br/>
                 Ce badge doit être porté de manière visible.<br/>
-                Espace sécurisé - Hôpital Mohammed VI.<br/>
-                Logiciel de Gestion GST v2.0
+                Espace sécurisé - Hôpital Mohammed VI.
                 `}
             </div>
-            <div class="footer-note">GST-INVENTAIRE</div>
           </div>
         </body>
       </html>
