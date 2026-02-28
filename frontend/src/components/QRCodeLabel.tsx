@@ -20,7 +20,7 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
   const fetchLogo = async () => {
     try {
       const path = window.location.pathname.endsWith('/') ? window.location.pathname : window.location.pathname + '/';
-      const response = await fetch(`${path}logo.png`);
+      const response = await fetch(`${path}logo-2.jfif`);
       if (!response.ok) throw new Error("Logo not found");
       const blob = await response.blob();
       const reader = new FileReader();
@@ -28,7 +28,7 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
       reader.readAsDataURL(blob);
     } catch (e) {
       console.error("Logo fetch error", e);
-      setLogoBase64(`${window.location.origin}/logo.png`);
+      setLogoBase64(`${window.location.origin}/logo-2.jfif`);
     }
   };
 

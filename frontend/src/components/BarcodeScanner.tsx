@@ -40,7 +40,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScanSuccess, isPaused
                 {
                     fps: 15,
                     qrbox: { width: 250, height: 250 },
-                    aspectRatio: 1.0
                 },
                 (decodedText) => {
                     // On ne traite les scans que si PAS en pause
@@ -120,7 +119,16 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScanSuccess, isPaused
     }, []);
 
     return (
-        <div className="w-full h-full relative overflow-hidden bg-black">
+        <div className="w-full h-full relative overflow-hidden bg-black flex items-center justify-center">
+            <style>
+                {`
+                    #reader-custom video {
+                        width: 100% !important;
+                        height: 100% !important;
+                        object-fit: cover !important;
+                    }
+                `}
+            </style>
             <div id="reader-custom" className="w-full h-full"></div>
 
             {/* Overlay de pause visuel si besoin, mais ici on gère via le parent */}

@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: mode === 'production' ? '/inventaireapp/' : '/',
+  base: process.env.VITE_MOBILE === 'true' ? './' : (mode === 'production' ? '/inventaireapp/' : '/'),
   plugins: [react()],
   server: {
     host: true, // Listen on all IP addresses (for mobile access)

@@ -1,0 +1,11 @@
+{
+  "appId": "com.gst.inventaire",
+  "appName": "Inventaire GST",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "StatusBar": {
+      "overlaysWebView": true
+    }
+  }
+}

@@ -11,7 +11,6 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
-  console.log("App.tsx full rendering with HashRouter");
   return (
     <Router>
       <AuthProvider>

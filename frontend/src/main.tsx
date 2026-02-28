@@ -1,23 +1,21 @@
 import { StrictMode, Component } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { StatusBar } from '@capacitor/status-bar';
 import './index.css'
 import App from './App.tsx'
 
+// Hide StatusBar for true full screen
+if (window.location.protocol === 'capacitor:') {
+  const hideStatus = () => StatusBar.hide().catch(e => console.error("Could not hide status bar", e));
+  hideStatus();
+  // Fallback for some devices that show it during splash screen transition
+  setTimeout(hideStatus, 1000);
+  setTimeout(hideStatus, 3000);
+}
+
+
 // GLOBAL ERROR TRAP
-window.onerror = function (msg, url, lineNo, columnNo, error) {
-  const errorMessage = `
-    <div style="background:red; color:white; padding:20px; font-size:16px; position:fixed; top:0; left:0; width:100%; z-index:9999;">
-      <h1>CRITICAL ERROR</h1>
-      <p><strong>Message:</strong> ${msg}</p>
-      <p><strong>Location:</strong> ${url}:${lineNo}:${columnNo}</p>
-      <p><strong>Stack:</strong> ${error?.stack}</p>
-    </div>
-  `;
-  document.body.innerHTML += errorMessage;
-  console.error("Global error caught:", error);
-  return false;
-};
 
 window.onunhandledrejection = function (event) {
   const errorMessage = `

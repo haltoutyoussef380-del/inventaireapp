@@ -27,7 +27,6 @@ const InventairePage: React.FC = () => {
     const [isImgLoading, setIsImgLoading] = useState(true);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const [lastSuccessfulCode, setLastSuccessfulCode] = useState<string | null>(null);
-    const [lastRawCode, setLastRawCode] = useState<string | null>(null);
 
     useEffect(() => {
         loadCampaigns();
@@ -102,7 +101,6 @@ const InventairePage: React.FC = () => {
     };
 
     const handleScan = async (code: string) => {
-        setLastRawCode(code);
         if (!inventaireId || !user) return;
         if (pendingMateriel) return;
         if (code === lastSuccessfulCode) return;
@@ -144,13 +142,6 @@ const InventairePage: React.FC = () => {
         }
     };
 
-    const exitScan = () => {
-        if (confirm("Quitter le mode scan ?")) {
-            setInventaireId(null);
-            setView('list');
-            loadCampaigns();
-        }
-    };
 
     return (
         <div className="min-h-screen bg-slate-50 animate-fade-in">
@@ -289,31 +280,12 @@ const InventairePage: React.FC = () => {
 
             {view === 'scan' && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    <button onClick={exitScan} className="lg:col-span-12 w-fit text-gray-400 flex items-center hover:text-red-600 mb-2 font-black transition-colors uppercase tracking-[0.2em] text-[10px] bg-white px-4 py-2 rounded-full shadow-sm">
-                        <ArrowLeft className="w-3 h-3 mr-2" /> Retour / Changer
-                    </button>
 
-                    <div className="lg:col-span-12 xl:col-span-8 bg-white p-10 rounded-[48px] shadow-2xl border border-gray-100 relative overflow-hidden">
+                    <div className="lg:col-span-12 xl:col-span-8 bg-white p-4 md:p-10 rounded-[48px] shadow-2xl border border-gray-100 relative overflow-hidden flex flex-col min-h-[70vh]">
                         {/* Background Decoration */}
                         <div className="absolute top-0 right-0 w-64 h-64 bg-gst-light/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
 
-                        <div className="flex justify-between items-center mb-10 relative z-10">
-                            <h2 className="text-sm font-black text-gst-dark uppercase tracking-[0.3em]">Scanner Laser Actif</h2>
-                            <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-2xl">
-                                <div className={`w-3 h-3 rounded-full ${!pendingMateriel && !lastSuccessfulCode ? 'bg-green-500 animate-pulse shadow-lg shadow-green-200' : 'bg-amber-500 animate-pulse shadow-lg shadow-amber-200'}`}></div>
-                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
-                                    {!pendingMateriel && !lastSuccessfulCode ? 'En attente' : 'Pause'}
-                                </span>
-                            </div>
-                        </div>
-
-                        {lastRawCode && (
-                            <div className="mb-4 text-[10px] font-black font-mono bg-gst-light/10 text-gst-light p-3 rounded-2xl text-center uppercase tracking-widest border border-gst-light/20">
-                                SIGNAL DÉTECTÉ : {lastRawCode} 📡
-                            </div>
-                        )}
-
-                        <div className="relative aspect-video max-h-[600px] flex items-center justify-center bg-gst-dark rounded-[40px] overflow-hidden shadow-2xl border-[12px] border-white ring-1 ring-gray-100">
+                        <div className="relative flex-1 flex items-center justify-center bg-gst-dark rounded-[32px] md:rounded-[40px] overflow-hidden shadow-2xl border-[4px] md:border-[12px] border-white ring-1 ring-gray-100">
                             <BarcodeScanner
                                 isPaused={!!pendingMateriel || !!lastSuccessfulCode}
                                 onScanSuccess={handleScan}
