@@ -256,18 +256,41 @@ export const userService = {
         // If the trigger just sets ID, we might need to update the profile with the name.
 
         if (data.user) {
-            // Update the profile with the name/role if the trigger basic insert wasn't enough
-            // But we can't use tempClient to update 'profiles' effectively if RLS blocks it.
-            // The Admin (main 'supabase' client) CAN update profiles.
-
             const { error: profileError } = await supabase
                 .from('profiles')
-                .update({ role: 'agent', email: email }) // Ensure role is agent
+                .update({ role: 'agent', email: email })
                 .eq('id', data.user.id);
 
             if (profileError) console.error("Error updating profile role:", profileError);
         }
 
         return data;
+    },
+
+    updateProfile: async (id: string, profile: { matricule?: string; fonction?: string; photo_url?: string }) => {
+        const { data, error } = await supabase
+            .from('profiles')
+            .update(profile)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    uploadUserPhoto: async (userId: string, file: File) => {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${userId}-${Math.random()}.${fileExt}`;
+        const filePath = `staff-photos/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+            .from('materiel-photos')
+            .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage.from('materiel-photos').getPublicUrl(filePath);
+        return data.publicUrl;
     }
 };

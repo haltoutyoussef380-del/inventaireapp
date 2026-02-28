@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { userService } from '../services/supabaseApi';
-import { UserPlus, Users, Shield, Mail, Key, UserIcon, ArrowLeft } from 'lucide-react';
+import { UserPlus, Users, Shield, Mail, Key, UserIcon, ArrowLeft, Edit3, Camera, X } from 'lucide-react';
+import StaffIDCard from '../components/StaffIDCard';
 
 const UsersPage: React.FC = () => {
     const [agents, setAgents] = useState<any[]>([]);
@@ -9,6 +10,9 @@ const UsersPage: React.FC = () => {
 
     const [newUser, setNewUser] = useState({ email: '', password: '', name: '' });
     const [msg, setMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [editingAgent, setEditingAgent] = useState<any>(null);
+    const [profileForm, setProfileForm] = useState({ matricule: '', fonction: '' });
+    const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
         loadAgents();
@@ -37,6 +41,35 @@ const UsersPage: React.FC = () => {
         } catch (error: any) {
             console.error(error);
             setMsg({ type: 'error', text: 'Échec: ' + error.message });
+        }
+    };
+
+    const handleUpdateProfile = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingAgent) return;
+        try {
+            await userService.updateProfile(editingAgent.id, profileForm);
+            setMsg({ type: 'success', text: 'Profil mis à jour !' });
+            setEditingAgent(null);
+            loadAgents();
+        } catch (error: any) {
+            setMsg({ type: 'error', text: error.message });
+        }
+    };
+
+    const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !editingAgent) return;
+        setUploading(true);
+        try {
+            const photoUrl = await userService.uploadUserPhoto(editingAgent.id, file);
+            await userService.updateProfile(editingAgent.id, { photo_url: photoUrl });
+            loadAgents();
+            setEditingAgent((prev: any) => ({ ...prev, photo_url: photoUrl }));
+        } catch (error: any) {
+            alert("Erreur upload: " + error.message);
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -138,7 +171,8 @@ const UsersPage: React.FC = () => {
                                 <tr>
                                     <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Utilisateur</th>
                                     <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Niveau Accès</th>
-                                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Signature Logicielle</th>
+                                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Matricule</th>
+                                    <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
@@ -168,8 +202,27 @@ const UsersPage: React.FC = () => {
                                                     </span>
                                                 </div>
                                             </td>
+                                            <td className="px-8 py-6">
+                                                <div className="font-bold text-xs text-gray-600">{agent.matricule || '-'}</div>
+                                                <div className="text-[9px] text-gray-400 italic">{agent.fonction || 'Non défini'}</div>
+                                            </td>
                                             <td className="px-8 py-6 text-right">
-                                                <span className="text-[9px] text-gray-300 font-mono tracking-tighter opacity-50 group-hover:opacity-100 transition-opacity">#{agent.id.substring(0, 12)}...</span>
+                                                <div className="flex justify-end gap-2 text-right">
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditingAgent(agent);
+                                                            setProfileForm({ matricule: agent.matricule || '', fonction: agent.fonction || '' });
+                                                        }}
+                                                        className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                                                        title="Modifier Profil"
+                                                    >
+                                                        <Edit3 size={16} />
+                                                    </button>
+                                                    <StaffIDCard agent={{
+                                                        ...agent,
+                                                        full_name: agent.full_name || agent.email.split('@')[0]
+                                                    }} />
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
@@ -183,6 +236,55 @@ const UsersPage: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Profile Edit Modal */}
+            {editingAgent && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gst-dark/40 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl p-8 relative overflow-hidden">
+                        <button onClick={() => setEditingAgent(null)} className="absolute top-6 right-6 text-gray-300 hover:text-red-500 transition-colors">
+                            <X size={24} />
+                        </button>
+
+                        <h3 className="text-xl font-black text-gst-dark mb-6 uppercase tracking-tight">Profil Professionnel</h3>
+
+                        <div className="flex flex-col items-center mb-8">
+                            <div className="relative group">
+                                <div className="w-24 h-32 bg-slate-100 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-inner flex items-center justify-center">
+                                    {editingAgent.photo_url ? (
+                                        <img src={editingAgent.photo_url} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="text-gray-300 font-black text-xs uppercase text-center p-4">Aucune Photo</div>
+                                    )}
+                                    {uploading && <div className="absolute inset-0 bg-white/60 flex items-center justify-center"><div className="w-6 h-6 border-2 border-gst-light border-t-transparent rounded-full animate-spin"></div></div>}
+                                </div>
+                                <label className="absolute -bottom-2 -right-2 bg-gst-light text-white p-2 rounded-xl shadow-lg cursor-pointer hover:bg-gst-dark transition-colors">
+                                    <Camera size={16} />
+                                    <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
+                                </label>
+                            </div>
+                            <span className="text-[10px] font-black text-gray-400 mt-4 uppercase tracking-widest">{editingAgent.email}</span>
+                        </div>
+
+                        <form onSubmit={handleUpdateProfile} className="space-y-4">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-2">Matricule</label>
+                                <input type="text" className="w-full bg-slate-50 p-4 rounded-2xl font-bold text-gray-700 outline-none focus:bg-white border-2 border-transparent focus:border-gst-light transition-all"
+                                    placeholder="ex: CHU-2025-001"
+                                    value={profileForm.matricule} onChange={e => setProfileForm({ ...profileForm, matricule: e.target.value })} />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-2">Fonction / Titre</label>
+                                <input type="text" className="w-full bg-slate-50 p-4 rounded-2xl font-bold text-gray-700 outline-none focus:bg-white border-2 border-transparent focus:border-gst-light transition-all"
+                                    placeholder="ex: Technicien Supérieur"
+                                    value={profileForm.fonction} onChange={e => setProfileForm({ ...profileForm, fonction: e.target.value })} />
+                            </div>
+                            <button className="w-full bg-gst-dark text-white py-4 rounded-3xl font-black mt-4 hover:bg-gst-light transition-all shadow-xl shadow-gst-dark/10 uppercase tracking-widest text-xs">
+                                Enregistrer les modifications
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

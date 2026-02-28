@@ -5,62 +5,78 @@ import { StatusBar } from '@capacitor/status-bar';
 import './index.css'
 import App from './App.tsx'
 
-// Hide StatusBar for true full screen
-if (window.location.protocol === 'capacitor:') {
-  const hideStatus = () => StatusBar.hide().catch(e => console.error("Could not hide status bar", e));
-  hideStatus();
-  // Fallback for some devices that show it during splash screen transition
-  setTimeout(hideStatus, 1000);
-  setTimeout(hideStatus, 3000);
-}
-
-
-// GLOBAL ERROR TRAP
-
-window.onunhandledrejection = function (event) {
-  const errorMessage = `
-    <div style="background:darkred; color:white; padding:20px; font-size:16px; position:fixed; bottom:0; left:0; width:100%; z-index:9999;">
-      <h1>UNHANDLED PROMISE REJECTION</h1>
-      <p><strong>Reason:</strong> ${event.reason}</p>
-    </div>
-  `;
-  document.body.innerHTML += errorMessage;
-  console.error("Unhandled rejection:", event.reason);
+// Diagnostic tool
+const showFatalError = (msg: string, detail?: string) => {
+  const div = document.createElement("div");
+  div.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;color:white;background:red;z-index:99999;padding:20px;font-family:monospace;white-space:pre-wrap;overflow:auto;display:block !important;";
+  div.innerHTML = `<h1>CRITICAL JS ERROR</h1><p style='font-size:18px'>${msg}</p><hr/><pre>${detail || ''}</pre>`;
+  document.body.innerHTML = ''; // Clear everything
+  document.body.appendChild(div);
+  console.error("Fatal Error:", msg, detail);
 };
 
-class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean, error: Error | null }> {
-  constructor(props: { children: ReactNode }) {
-    super(props);
-    this.state = { hasError: false, error: null };
+// Global Catch-all
+window.onerror = (msg, url, line, col, error) => {
+  showFatalError(String(msg), `${url}:${line}:${col}\n\n${error?.stack || ''}`);
+  return false;
+};
+
+window.onunhandledrejection = (event) => {
+  showFatalError("Unhandled Promise Rejection", String(event.reason));
+};
+
+try {
+  console.log("V3.2 - STARTING APP INITIALIZATION");
+
+  // Hide StatusBar for true full screen
+  if (window.location.protocol === 'capacitor:') {
+    StatusBar.hide().catch(e => console.error("Could not hide status bar", e));
+    // Repeat for safety
+    setTimeout(() => StatusBar.hide().catch(() => { }), 1000);
   }
 
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
+  const rootElement = document.getElementById('root');
+  if (!rootElement) {
+    throw new Error("Element with ID 'root' was not found in the DOM.");
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught error:", error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div style={{ padding: '20px', color: 'red', fontFamily: 'monospace' }}>
-          <h1>React Info: Something went wrong.</h1>
-          <pre>{this.state.error?.toString()}</pre>
-          <pre>{this.state.error?.stack}</pre>
-        </div>
-      );
+  class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean, error: Error | null }> {
+    constructor(props: { children: ReactNode }) {
+      super(props);
+      this.state = { hasError: false, error: null };
     }
 
-    return this.props.children;
-  }
-}
+    static getDerivedStateFromError(error: Error) {
+      return { hasError: true, error };
+    }
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
-  </StrictMode>,
-)
+    componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+      console.error("Uncaught error:", error, errorInfo);
+    }
+
+    render() {
+      if (this.state.hasError) {
+        return (
+          <div style={{ padding: '20px', color: 'red', fontFamily: 'monospace', background: '#fff', height: '100vh' }}>
+            <h1>React Runtime Error</h1>
+            <pre style={{ whiteSpace: 'pre-wrap' }}>{this.state.error?.toString()}</pre>
+            <pre style={{ whiteSpace: 'pre-wrap', fontSize: '10px' }}>{this.state.error?.stack}</pre>
+          </div>
+        );
+      }
+      return this.props.children;
+    }
+  }
+
+  createRoot(rootElement).render(
+    <StrictMode>
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    </StrictMode>
+  );
+
+  console.log("V3.2 - REACT RENDERED CALLED");
+} catch (e: any) {
+  showFatalError("Initialization Failure", e?.stack || String(e));
+}
