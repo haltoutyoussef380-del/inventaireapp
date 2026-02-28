@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
 import { Printer } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import { QRCodeCanvas } from 'qrcode.react';
 
 interface QRCodeLabelProps {
   materiel: {
@@ -50,7 +51,66 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
       logoWidth: 28
     };
 
-    // Create a hidden iframe for printing
+    const isMobile = window.location.protocol === 'capacitor:';
+
+    if (isMobile) {
+      // Mobile approach: Generate PDF using jsPDF
+      const doc = new jsPDF({
+        orientation: s.width > s.height ? 'l' : 'p',
+        unit: 'mm',
+        format: [s.width, s.height]
+      });
+
+      // Background
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, s.width, s.height, 'F');
+
+      // Border bottom for header
+      doc.setDrawColor(0);
+      doc.setLineWidth(0.2);
+      doc.line(2, 6, s.width - 2, 6);
+
+      // Title/Name
+      doc.setFont('Helvetica', 'bold');
+      doc.setFontSize(s.fontSize);
+      doc.text(materiel.nom.substring(0, 30), 2, 4);
+
+      // Subtitle
+      doc.setFont('Helvetica', 'normal');
+      doc.setFontSize(s.fontSize * 0.8);
+      doc.setTextColor(100);
+      doc.text(materiel.marque || 'SANS MARQUE', 2, 9);
+
+      // QR Code
+      const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+      if (canvas) {
+        const qrDataUrl = canvas.toDataURL('image/png');
+        const qrSize = s.height * 0.6;
+        doc.addImage(qrDataUrl, 'PNG', 2, 11, qrSize, qrSize);
+      }
+
+      // ID text
+      doc.setFont('Courier', 'bold');
+      doc.setFontSize(s.fontSize);
+      doc.setTextColor(0);
+      doc.text(materiel.numero_inventaire, 2, s.height - 2);
+
+      // Logo
+      if (logoBase64) {
+        try {
+          const logoWidth = s.logoWidth || 20;
+          const logoHeight = s.height * 0.7;
+          doc.addImage(logoBase64, 'JPEG', s.width - logoWidth - 2, 8, logoWidth, logoHeight, undefined, 'FAST');
+        } catch (e) {
+          console.error("Failed to add logo to PDF", e);
+        }
+      }
+
+      doc.save(`etiquette-${materiel.numero_inventaire}.pdf`);
+      return;
+    }
+
+    // Classic Desktop Iframe Printing
     let iframe = document.getElementById('print-iframe') as HTMLIFrameElement;
     if (!iframe) {
       iframe = document.createElement('iframe');
@@ -200,7 +260,7 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
       <div style={{ display: 'none' }}>
         <div ref={printRef} className="label-container">
           <div className="qr-code">
-            <QRCodeSVG value={materiel.numero_inventaire} size={120} />
+            <QRCodeCanvas value={materiel.numero_inventaire} size={256} />
           </div>
           <div className="info">
             <span className="title">{materiel.nom.substring(0, 20)}</span>

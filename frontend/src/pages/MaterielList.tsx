@@ -3,7 +3,8 @@ import { materielService } from '../services/supabaseApi';
 import MaterielForm from '../components/MaterielForm';
 import { Printer, Edit2, Trash2, PlusCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { QRCodeSVG } from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react';
+import { jsPDF } from 'jspdf';
 
 const MaterielList: React.FC = () => {
     const [materiels, setMateriels] = useState([]);
@@ -68,6 +69,64 @@ const MaterielList: React.FC = () => {
 
         const stored = localStorage.getItem('zebra_printer_settings');
         const s = stored ? JSON.parse(stored) : { width: 50, height: 25, marginLeft: 0, marginTop: 0, fontSize: 9, logoWidth: 15 };
+
+        const isMobile = window.location.protocol === 'capacitor:';
+
+        if (isMobile) {
+            const doc = new jsPDF({
+                orientation: s.width > s.height ? 'l' : 'p',
+                unit: 'mm',
+                format: [s.width, s.height]
+            });
+
+            // Background
+            doc.setFillColor(255, 255, 255);
+            doc.rect(0, 0, s.width, s.height, 'F');
+
+            // Header Border
+            doc.setDrawColor(0);
+            doc.setLineWidth(0.2);
+            doc.line(2, 6, s.width - 2, 6);
+
+            // Title
+            doc.setFont('Helvetica', 'bold');
+            doc.setFontSize(s.fontSize);
+            doc.text(materiel.nom.substring(0, 30), 2, 4);
+
+            // Subtitle
+            doc.setFont('Helvetica', 'normal');
+            doc.setFontSize(s.fontSize * 0.8);
+            doc.setTextColor(100);
+            doc.text(`${materiel.marque || 'SANS MARQUE'}${materiel.adresse_ip ? ' IP: ' + materiel.adresse_ip : ''}`, 2, 9);
+
+            // QR Code
+            const canvas = document.querySelector(`#qr-code-hidden-${materiel.id} canvas`) as HTMLCanvasElement;
+            if (canvas) {
+                const qrDataUrl = canvas.toDataURL('image/png');
+                const qrSize = s.qrSize || (s.height * 0.7);
+                doc.addImage(qrDataUrl, 'PNG', 2, 11, qrSize, qrSize);
+            }
+
+            // ID
+            doc.setFont('Courier', 'bold');
+            doc.setFontSize(s.fontSize);
+            doc.setTextColor(0);
+            doc.text(materiel.numero_inventaire, 2, s.height - 2);
+
+            // Logo
+            if (logoBase64) {
+                try {
+                    const logoWidth = s.logoWidth || 15;
+                    const logoHeight = s.height * 0.75;
+                    doc.addImage(logoBase64, 'JPEG', s.width - logoWidth - 2, 8, logoWidth, logoHeight, undefined, 'FAST');
+                } catch (e) {
+                    console.error("Logo PDF addition failed", e);
+                }
+            }
+
+            doc.save(`etiquette-${materiel.numero_inventaire}.pdf`);
+            return;
+        }
 
         let iframe = document.getElementById('print-iframe') as HTMLIFrameElement;
         if (!iframe) {
@@ -137,7 +196,7 @@ const MaterielList: React.FC = () => {
             <div style={{ display: 'none' }}>
                 {materiels.map((m: any) => (
                     <div key={m.id} id={`qr-code-hidden-${m.id}`}>
-                        <QRCodeSVG value={m.numero_inventaire} size={128} />
+                        <QRCodeCanvas value={m.numero_inventaire} size={256} />
                     </div>
                 ))}
             </div>
