@@ -13,9 +13,16 @@ const StaffCardsPage: React.FC = () => {
     const [msg, setMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const [editingMember, setEditingMember] = useState<any>(null);
     const [uploading, setUploading] = useState(false);
+    const [customInstructions, setCustomInstructions] = useState('');
 
     useEffect(() => {
         loadStaff();
+        const savedInstructions = localStorage.getItem('gst_card_instructions');
+        if (savedInstructions) {
+            setCustomInstructions(savedInstructions);
+        } else {
+            setCustomInstructions("Cette carte est strictement personnelle et incessible.\nEn cas de perte, merci de prévenir immédiatement l'administration.\nCe badge doit être porté de manière visible dans l'établissement.\nSystème de Gestion GST-INVENTAIRE.");
+        }
     }, []);
 
     const loadStaff = async () => {
@@ -91,6 +98,12 @@ const StaffCardsPage: React.FC = () => {
         m.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         m.matricule?.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    const handleSaveInstructions = () => {
+        localStorage.setItem('gst_card_instructions', customInstructions);
+        setMsg({ type: 'success', text: 'Instructions de la carte sauvegardées !' });
+        setTimeout(() => setMsg(null), 3000);
+    };
 
     return (
         <div className="max-w-6xl mx-auto animate-fade-in px-4">
@@ -214,10 +227,13 @@ const StaffCardsPage: React.FC = () => {
                                 </div>
 
                                 <div className="flex gap-2 w-full mt-auto">
-                                    <StaffIDCard agent={{
-                                        ...member,
-                                        email: member.full_name.replace(' ', '.').toLowerCase() + '@gst.local'
-                                    }} />
+                                    <StaffIDCard
+                                        agent={{
+                                            ...member,
+                                            email: member.full_name.replace(' ', '.').toLowerCase() + '@gst.local'
+                                        }}
+                                        customInstructions={customInstructions}
+                                    />
                                     <button
                                         onClick={() => handleDelete(member.id, member.full_name)}
                                         className="p-3 text-red-400 hover:bg-red-50 rounded-xl transition-all"
@@ -230,6 +246,31 @@ const StaffCardsPage: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {/* Paramètres de la Carte */}
+            {!showForm && (
+                <div className="mt-16 bg-white p-10 rounded-[40px] shadow-2xl border border-gray-100 animate-in slide-in-from-bottom duration-500">
+                    <h2 className="text-2xl font-black mb-6 text-gst-dark uppercase tracking-tight border-l-4 border-gst-light pl-4">Paramètres des Cartes</h2>
+                    <p className="text-sm text-gray-500 mb-6 font-bold">Modifiez le texte des instructions qui apparaîtra au verso de <strong>toutes</strong> les cartes professionnelles.</p>
+
+                    <div className="space-y-4">
+                        <textarea
+                            className="w-full bg-slate-50 border-2 border-transparent focus:border-gst-light focus:bg-white p-6 rounded-[28px] transition-all outline-none font-bold text-gray-700 min-h-[150px] resize-none"
+                            value={customInstructions}
+                            onChange={(e) => setCustomInstructions(e.target.value)}
+                            placeholder="Instructions ligne par ligne..."
+                        />
+                        <div className="flex justify-end">
+                            <button
+                                onClick={handleSaveInstructions}
+                                className="bg-gst-dark text-white px-8 py-4 rounded-[24px] font-black shadow-xl shadow-gst-dark/10 hover:bg-gst-light transition-all uppercase tracking-widest text-xs"
+                            >
+                                Sauvegarder les instructions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Edit Modal (Photo & Bio) */}
             {editingMember && (

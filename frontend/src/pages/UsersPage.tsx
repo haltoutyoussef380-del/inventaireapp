@@ -13,9 +13,16 @@ const UsersPage: React.FC = () => {
     const [editingAgent, setEditingAgent] = useState<any>(null);
     const [profileForm, setProfileForm] = useState({ matricule: '', fonction: '', cnie: '', photo_url: '' });
     const [uploading, setUploading] = useState(false);
+    const [customInstructions, setCustomInstructions] = useState('');
 
     useEffect(() => {
         loadAgents();
+        const savedInstructions = localStorage.getItem('gst_card_instructions');
+        if (savedInstructions) {
+            setCustomInstructions(savedInstructions);
+        } else {
+            setCustomInstructions("Cette carte est strictement personnelle et incessible.\nEn cas de perte, merci de prévenir immédiatement l'administration.\nCe badge doit être porté de manière visible dans l'établissement.\nSystème de Gestion GST-INVENTAIRE.");
+        }
     }, []);
 
     const loadAgents = async () => {
@@ -223,10 +230,13 @@ const UsersPage: React.FC = () => {
                                                     >
                                                         <Edit3 size={16} />
                                                     </button>
-                                                    <StaffIDCard agent={{
-                                                        ...agent,
-                                                        full_name: agent.full_name || agent.email.split('@')[0]
-                                                    }} />
+                                                    <StaffIDCard
+                                                        agent={{
+                                                            ...agent,
+                                                            full_name: agent.full_name || agent.email.split('@')[0]
+                                                        }}
+                                                        customInstructions={customInstructions}
+                                                    />
                                                 </div>
                                             </td>
                                         </tr>
