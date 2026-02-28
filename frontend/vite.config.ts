@@ -1,13 +1,19 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+const isMobile = process.env.VITE_MOBILE === 'true';
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: process.env.VITE_MOBILE === 'true' ? './' : (mode === 'production' ? '/inventaireapp/' : '/'),
+  base: isMobile ? './' : (mode === 'production' ? '/inventaireapp/' : '/'),
   plugins: [react()],
+  build: isMobile ? {
+    target: 'es2015',
+    cssTarget: 'chrome61',
+  } : {},
   server: {
-    host: true, // Listen on all IP addresses (for mobile access)
-    port: 5174, // Frontend port changed to 5174 just in case 5173 is taken
+    host: true,
+    port: 5174,
     proxy: {
       '/api': {
         target: 'http://localhost:5000',
