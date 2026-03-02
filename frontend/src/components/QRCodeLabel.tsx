@@ -48,60 +48,52 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
       marginLeft: 0,
       marginTop: 0,
       fontSize: 10,
-      logoWidth: 28
+      logoWidth: 35,
+      qrSize: 20
     };
 
     // @ts-ignore
     const isMobile = !!window.Capacitor?.isNative || window.location.protocol === 'capacitor:';
 
     if (isMobile) {
-      // Mobile approach: Generate PDF using jsPDF
       const doc = new jsPDF({
         orientation: s.width > s.height ? 'l' : 'p',
         unit: 'mm',
         format: [s.width, s.height]
       });
 
-      // Background
       doc.setFillColor(255, 255, 255);
       doc.rect(0, 0, s.width, s.height, 'F');
-
-      // Border bottom for header
       doc.setDrawColor(0);
       doc.setLineWidth(0.2);
-      doc.line(2, 6, s.width - 2, 6);
+      doc.line(1.5, 6.5, s.width - 1.5, 6.5);
 
-      // Title/Name
       doc.setFont('Helvetica', 'bold');
       doc.setFontSize(s.fontSize);
-      doc.text(materiel.nom.substring(0, 30), 2, 4);
+      doc.text(materiel.nom.substring(0, 35), 1.5, 4.5);
 
-      // Subtitle
       doc.setFont('Helvetica', 'normal');
-      doc.setFontSize(s.fontSize * 0.8);
+      doc.setFontSize(Math.max(s.fontSize - 1, 5));
       doc.setTextColor(100);
-      doc.text(materiel.marque || 'SANS MARQUE', 2, 9);
+      doc.text(materiel.marque || 'SANS MARQUE', 1.5, 7.5);
 
-      // QR Code
+      const qrSize = s.qrSize || 18;
       const canvas = document.querySelector(`#qr-canvas-${materiel.id}`) as HTMLCanvasElement;
       if (canvas) {
         const qrDataUrl = canvas.toDataURL('image/png');
-        const qrSize = s.height * 0.6;
-        doc.addImage(qrDataUrl, 'PNG', 2, 11, qrSize, qrSize);
+        doc.addImage(qrDataUrl, 'PNG', 1.5, 8.5, qrSize, qrSize);
       }
 
-      // ID text
       doc.setFont('Courier', 'bold');
-      doc.setFontSize(s.fontSize);
+      doc.setFontSize(Math.max(s.fontSize - 1, 5));
       doc.setTextColor(0);
-      doc.text(materiel.numero_inventaire, 2, s.height - 2);
+      doc.text(materiel.numero_inventaire, 1.5 + qrSize / 2, s.height - 1, { align: 'center' });
 
-      // Logo
       if (logoBase64) {
         try {
-          const logoWidth = s.logoWidth || 20;
-          const logoHeight = s.height * 0.7;
-          doc.addImage(logoBase64, 'JPEG', s.width - logoWidth - 2, 8, logoWidth, logoHeight, undefined, 'FAST');
+          const logoWidth = s.logoWidth || 30;
+          const logoHeight = s.height * 0.65;
+          doc.addImage(logoBase64, 'JPEG', s.width - logoWidth - 2, 9, logoWidth, logoHeight, undefined, 'FAST');
         } catch (e) {
           console.error("Failed to add logo to PDF", e);
         }
@@ -111,142 +103,55 @@ const QRCodeLabel: React.FC<QRCodeLabelProps> = ({ materiel }) => {
       return;
     }
 
-    // Classic Desktop Iframe Printing
+    // Desktop - Iframe Print
     let iframe = document.getElementById('print-iframe') as HTMLIFrameElement;
     if (!iframe) {
       iframe = document.createElement('iframe');
       iframe.id = 'print-iframe';
-      iframe.style.position = 'absolute';
-      iframe.style.width = '0px';
-      iframe.style.height = '0px';
-      iframe.style.border = 'none';
+      iframe.style.cssText = 'position:absolute;width:0;height:0;border:none;top:-9999px;left:-9999px';
       document.body.appendChild(iframe);
     }
 
     const doc = iframe.contentWindow?.document || iframe.contentDocument;
     if (!doc) return;
 
-    doc.write(`
-        <html>
-          <head>
-            <title>Etiquette</title>
-            <style>
-              @page { 
-                size: ${s.width}mm ${s.height}mm; 
-                margin: 0 !important; 
-              }
-              * {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-              }
-              html, body { 
-                margin: 0 !important; 
-                padding: 0 !important;
-                width: ${s.width}mm;
-                height: ${s.height}mm;
-                font-family: 'Arial', 'Helvetica', sans-serif;
-                overflow: hidden;
-                background-color: white;
-              }
-              .label-container { 
-                display: flex; 
-                flex-direction: column; 
-                width: ${s.width}mm;
-                height: ${s.height}mm;
-                margin: 0 !important;
-                padding: 1mm 2mm !important;
-                box-sizing: border-box;
-                justify-content: space-between; /* Fill height */
-              }
-              .header {
-                width: 100%;
-                margin-bottom: 0.5mm;
-                border-bottom: 0.2mm solid #000;
-                padding-bottom: 0.3mm;
-                display: flex;
-                flex-direction: column;
-              }
-              .title {
-                font-size: ${s.fontSize}pt;
-                font-weight: bold;
-                text-transform: uppercase;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-              }
-              .subtitle {
-                font-size: ${s.fontSize}pt; 
-                color: #444;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-              }
-              .content-row {
-                width: 100%;
-                display: flex;
-                flex: 1;
-                align-items: center;
-                justify-content: center;
-                overflow: hidden;
-              }
-              .qr-col {
-                width: 50%;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-              }
-              .qr-code svg { 
-                width: ${s.height * 0.72}mm !important; 
-                height: ${s.height * 0.72}mm !important; 
-                margin-bottom: 0.1mm;
-              }
-              .id { 
-                font-size: ${s.fontSize}pt; 
-                font-weight: bold; 
-                font-family: 'Courier New', monospace; 
-                white-space: nowrap;
-              }
-              
-              .logo-col {
-                width: 50%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-              }
-              .logo-img {
-                max-width: 98%; 
-                max-height: ${s.height * 0.78}mm;
-                object-fit: contain;
-              }
+    const qrSizeMm = s.qrSize || 18;
+    const logoW = s.logoWidth || 30;
+    const logoH = Math.round(s.height * 0.75);
+    const fontPt = s.fontSize || 9;
+    const subFontPt = Math.max(fontPt - 1, 5);
 
-              @media print {
-                body { margin: 0; }
-                .no-print { display: none; }
-              }
-            </style>
-          </head>
-          <body>
-            <div class="label-container">
-              <div class="header">
-                <span class="title">${materiel.nom}</span>
-                <span class="subtitle">${materiel.marque || 'SANS MARQUE'}</span>
-              </div>
-               <div class="content-row">
-                <div class="qr-col">
-                  <div class="qr-code">
-                    ${printContent.querySelector('.qr-code')?.innerHTML || ''}
-                  </div>
-                  <span class="id">${materiel.numero_inventaire}</span>
-                </div>
-                <div class="logo-col">
-                   <img src="${logoBase64}" class="logo-img" />
-                </div>
-              </div>
-            </div>
-          </body>
-        </html>
-      `);
+    const svgEl = printContent.querySelector('.qr-code svg');
+    const svgHTML = svgEl ? svgEl.outerHTML : '';
+
+    const html = [
+      '<!DOCTYPE html>',
+      '<html><head><title>Etiquette</title><style>',
+      '@page{size:' + s.width + 'mm ' + s.height + 'mm;margin:0!important}',
+      '*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
+      'html,body{margin:0!important;padding:0!important;width:' + s.width + 'mm;height:' + s.height + 'mm;font-family:Arial,sans-serif;overflow:hidden;background:white}',
+      '.label{width:' + s.width + 'mm;height:' + s.height + 'mm;padding:0.8mm 1.5mm;display:flex;flex-direction:column}',
+      '.hdr{border-bottom:0.3mm solid #000;padding-bottom:0.3mm;margin-bottom:0.4mm;line-height:1.1}',
+      '.t1{font-size:' + fontPt + 'pt;font-weight:900;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}',
+      '.t2{font-size:' + subFontPt + 'pt;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}',
+      '.row{flex:1;display:flex;align-items:center;overflow:hidden}',
+      '.qrside{width:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.2mm}',
+      '.qrside svg{width:' + qrSizeMm + 'mm!important;height:' + qrSizeMm + 'mm!important;display:block}',
+      '.inv{font-size:' + subFontPt + 'pt;font-weight:700;font-family:"Courier New",monospace;white-space:nowrap}',
+      '.logoside{width:50%;display:flex;align-items:center;justify-content:center}',
+      '.logoside img{max-width:' + logoW + 'mm;max-height:' + logoH + 'mm;object-fit:contain}',
+      '</style></head><body>',
+      '<div class="label">',
+      '<div class="hdr"><span class="t1">' + materiel.nom + '</span><span class="t2">' + (materiel.marque || 'SANS MARQUE') + '</span></div>',
+      '<div class="row">',
+      '<div class="qrside">' + svgHTML + '<span class="inv">' + materiel.numero_inventaire + '</span></div>',
+      '<div class="logoside"><img src="' + logoBase64 + '" /></div>',
+      '</div></div>',
+      '</body></html>'
+    ].join('');
+
+    doc.open();
+    doc.write(html);
     doc.close();
 
     setTimeout(() => {
