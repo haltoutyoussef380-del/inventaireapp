@@ -76,6 +76,14 @@ export const materielService = {
     },
 
     delete: async (id: number) => {
+        // First delete related inventory lines (foreign key constraint)
+        const { error: linesError } = await supabase
+            .from('inventaire_lignes')
+            .delete()
+            .eq('materiel_id', id);
+        if (linesError) throw linesError;
+
+        // Then delete the materiel itself
         const { error } = await supabase
             .from('materiels')
             .delete()
